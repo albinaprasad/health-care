@@ -4,9 +4,6 @@ import android.os.Bundle
 import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import com.example.healthcare.R
 import com.example.healthcare.databinding.ActivityWelcomeBinding
 
 class WelcomeActivity : AppCompatActivity() {
@@ -21,8 +18,6 @@ class WelcomeActivity : AppCompatActivity() {
 
 
         setUplisteners()
-
-
 
     }
 
