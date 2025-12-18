@@ -20,7 +20,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.5"
+        app:layout_constraintGuide_percent="0.42"
         >
     </androidx.constraintlayout.widget.Guideline>
 
@@ -98,5 +98,18 @@
         android:text="Hi Welcome!!!">
 
     </ImageView>
+
+    <!-- Fixed Custom View with proper constraints -->
+    <com.example.healthcare.views.CustomSignInView
+        android:layout_marginTop="-23dp"
+        android:id="@+id/SignInView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:elevation="8dp"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/gLcenter" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,21 +1,85 @@
 package com.example.healthcare.views
 
 import android.os.Bundle
+import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.healthcare.R
+import com.example.healthcare.databinding.ActivityWelcomeBinding
 
 class WelcomeActivity : AppCompatActivity() {
+    lateinit var binding: ActivityWelcomeBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_welcome)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
+
+        binding= ActivityWelcomeBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+
+        setUplisteners()
+
+
+
+    }
+
+    private fun setUplisteners(){
+        with(binding){
+            btnContinue.setOnClickListener {
+                animateViews()
+            }
         }
+    }
+
+    private fun animateViews(){
+        with(binding){
+
+
+            SignInView.alpha = 0f
+            SignInView.visibility = View.VISIBLE
+
+                welcomeText.alpha = 1f
+                welcomeDescription.alpha = 1f
+                btnContinue.alpha = 1f
+
+
+                imageView.animate()
+                    .translationY(-500f)
+                    .setDuration(900)
+                    .start()
+
+                // Animate SignInView fading in
+            SignInView.animate()
+                    .alpha(1f)
+                    .setDuration(900)
+                    .start()
+
+                // Animate the welcome texts and button fading out together
+                welcomeText.animate()
+                    .alpha(0f)
+                    .setDuration(900)
+                    .start()
+
+                welcomeDescription.animate()
+                    .alpha(0f)
+                    .setDuration(900)
+                    .start()
+
+                btnContinue.animate()
+                    .alpha(0f)
+                    .setDuration(900)
+                    .withEndAction {
+                        // Only hide them after their fade-out completes
+                        welcomeText.visibility = View.GONE
+                        welcomeDescription.visibility = View.GONE
+                        btnContinue.visibility = View.GONE
+                    }
+                    .start()
+            }
+
+
     }
 }
