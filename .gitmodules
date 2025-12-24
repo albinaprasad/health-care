@@ -1,0 +1,3 @@
+[submodule "app/libs/healthcore"]
+	path = app/libs/healthcore
+	url = https://github.com/albinaprasad/health-care.git
