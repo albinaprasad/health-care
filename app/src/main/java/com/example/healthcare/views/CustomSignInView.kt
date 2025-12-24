@@ -13,10 +13,21 @@ class CustomSignInView @JvmOverloads constructor(
 ): ConstraintLayout(context,attrs,defStyleAttr) {
 
     private val binding : CustomSignInLayoutBinding
+    private var onLoginClick :(()-> Unit)? = null
 
 
     init
     {
         binding = CustomSignInLayoutBinding.inflate(LayoutInflater.from(context), this, true)
+
+        binding.loginBtn.setOnClickListener {
+            onLoginClick?.invoke()
+        }
     }
+
+    fun setLoginButtonClick(listener: ()-> Unit){
+        onLoginClick = listener
+
+    }
+
 }
