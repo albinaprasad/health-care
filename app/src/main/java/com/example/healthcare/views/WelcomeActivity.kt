@@ -27,6 +27,7 @@ class WelcomeActivity : AppCompatActivity() {
         setUplisteners()
         observeViewModels()
 
+
     }
 
     private fun setUplisteners() {
@@ -41,6 +42,7 @@ class WelcomeActivity : AppCompatActivity() {
 
         }
     }
+
 
     private fun observeViewModels(){
        lifecycleScope.launch {

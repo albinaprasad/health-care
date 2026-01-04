@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="10dp"
+    android:id="@+id/RmainBgrnd"
+    app:cardCornerRadius="30dp"
+    app:cardElevation="26dp"
+    app:strokeWidth="1.5dp"
+    android:layout_marginHorizontal="10dp"
+    android:layout_marginVertical="10dp"
+    app:strokeColor="@color/green"
+    android:focusable="true"
+    android:clickable="true"
+    app:rippleColor="@color/Pink"
+    app:cardBackgroundColor="#F5DCDC">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:gravity="center">
+
+        <ImageView
+            android:id="@+id/RimageView"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_home_unfilled"
+            android:layout_marginBottom="12dp"/>
+
+
+        <TextView
+            android:id="@+id/RtxtDec"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Headphones"
+            android:textSize="18dp"
+            android:gravity="center"
+            android:textColor="#555"
+            android:layout_marginTop="2dp"/>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

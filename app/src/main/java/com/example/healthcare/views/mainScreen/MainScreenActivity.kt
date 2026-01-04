@@ -9,8 +9,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.recyclerview.widget.GridLayoutManager
 import com.example.healthcare.R
+import com.example.healthcare.adapters.WelcomeScreenAdapter
 import com.example.healthcare.databinding.ActivityMainScreenBinding
+import com.example.healthcare.dataclasses.GridItem
 
 class MainScreenActivity : AppCompatActivity() {
 
@@ -36,7 +39,20 @@ class MainScreenActivity : AppCompatActivity() {
 
        setUpListeners()
         setUpNavDrawer()
+        setUpAdapter()
     }
+    private fun setUpAdapter(){
+        val items = listOf(
+            GridItem(R.drawable.ic_home_unfilled, "Home"),
+            GridItem(R.drawable.ic_email, "Profile"),
+            GridItem(R.drawable.ic_user_profile, "Help"),
+            GridItem(R.drawable.ic_password, "Prescription")
+        )
+
+        binding.recyclerView.layoutManager= GridLayoutManager(this@MainScreenActivity,1)
+        binding.recyclerView.adapter = WelcomeScreenAdapter(items)
+    }
+
 
     fun setUpListeners(){
         with(binding){
