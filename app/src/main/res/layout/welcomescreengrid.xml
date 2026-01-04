@@ -13,7 +13,7 @@
     app:strokeColor="@color/green"
     android:focusable="true"
     android:clickable="true"
-    app:rippleColor="@color/Pink"
+    app:rippleColor="#FF9D8A"
     app:cardBackgroundColor="#F5DCDC">
 
     <LinearLayout
