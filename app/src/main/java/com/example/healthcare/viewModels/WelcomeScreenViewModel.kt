@@ -12,4 +12,5 @@ class WelcomeScreenViewModel: ViewModel() {
     fun onContinueButtonClicked(){
         _animationState.value = true
     }
+
 }

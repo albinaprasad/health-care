@@ -12,7 +12,6 @@ import com.example.healthcare.databinding.ActivityWelcomeBinding
 import com.example.healthcare.viewModels.WelcomeScreenViewModel
 import com.example.healthcare.views.mainScreen.MainScreenActivity
 import kotlinx.coroutines.launch
-
 class WelcomeActivity : AppCompatActivity() {
     lateinit var binding: ActivityWelcomeBinding
     private val viewmodel: WelcomeScreenViewModel by viewModels()
@@ -27,7 +26,6 @@ class WelcomeActivity : AppCompatActivity() {
         setUplisteners()
         observeViewModels()
 
-
     }
 
     private fun setUplisteners() {
@@ -35,6 +33,7 @@ class WelcomeActivity : AppCompatActivity() {
             btnContinue.setOnClickListener {
                 viewmodel.onContinueButtonClicked()
             }
+
             SignInView.setLoginButtonClick {
                 MainScreenActivity.startActivity(this@WelcomeActivity)
 
@@ -60,7 +59,6 @@ class WelcomeActivity : AppCompatActivity() {
 
     private fun animateViews() {
         with(binding) {
-
 
             SignInView.alpha = 0f
             SignInView.visibility = View.VISIBLE

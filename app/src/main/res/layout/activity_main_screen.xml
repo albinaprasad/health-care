@@ -39,7 +39,7 @@
             android:layout_marginTop="14dp"
             android:layout_width="match_parent"
             app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-            app:spanCount="2"
+            app:spanCount="1"
             tools:listitem="@layout/welcomescreengrid"
             android:layout_height="wrap_content">
         </androidx.recyclerview.widget.RecyclerView>
@@ -56,4 +56,6 @@
         android:layout_gravity="start"
         app:headerLayout="@layout/menu_header"
         app:menu="@menu/menu_item"/>
+
+
 </androidx.drawerlayout.widget.DrawerLayout>
