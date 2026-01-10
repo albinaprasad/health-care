@@ -10,10 +10,17 @@ import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.healthcare.R
+import com.example.healthcare.adapters.CalendarAdapter
 import com.example.healthcare.adapters.WelcomeScreenAdapter
 import com.example.healthcare.databinding.ActivityMainScreenBinding
 import com.example.healthcare.dataclasses.GridItem
+import com.example.healthcare.dataclasses.calenderDay
+import java.time.LocalDate
+import java.time.YearMonth
+import java.time.format.TextStyle
+import java.util.Locale
 
 class MainScreenActivity : AppCompatActivity() {
 
@@ -40,6 +47,7 @@ class MainScreenActivity : AppCompatActivity() {
        setUpListeners()
         setUpNavDrawer()
         setUpAdapter()
+        setDateAdapter()
     }
     private fun setUpAdapter(){
         val items = listOf(
@@ -84,6 +92,34 @@ class MainScreenActivity : AppCompatActivity() {
                 binding.drawerLayout.closeDrawer(GravityCompat.START)
             }
         }
+    }
+
+    fun setDateAdapter() {
+        val date = generateCurrentMonthDay()
+        binding.dateRV.layoutManager =
+            LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        binding.dateRV.adapter = CalendarAdapter(date)
+    }
+
+    fun generateCurrentMonthDay(): List<calenderDay>{
+        val list =mutableListOf<calenderDay>()
+        val today = LocalDate.now()
+        val currentMonth = YearMonth.now()
+        for (day in 1..currentMonth.lengthOfMonth()) {
+            val date = currentMonth.atDay(day)
+
+            val letter = date.dayOfWeek.name.first().toString()
+
+            list.add(
+                calenderDay(
+                    dayName =letter,
+                    date = day,
+                    isToday = date == today
+                )
+            )
+        }
+        return list
+
     }
 
 

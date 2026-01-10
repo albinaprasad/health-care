@@ -11,7 +11,7 @@
     <!-- MAIN CONTENT -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/main"
-        android:background="@color/Pink"
+        android:background="@color/white"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -29,9 +29,16 @@
             >
         </ImageButton>
 
+        <TextView
+            text
+            android:layout_width="0dp"
+            android:layout_height="wrap_content">
+
+        </TextView>
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/dateRV"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="25dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/navbtn"
             android:layout_width="match_parent"
