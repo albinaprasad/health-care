@@ -30,9 +30,18 @@
         </ImageButton>
 
         <TextView
-            text
+            android:id="@+id/dateTV"
             android:layout_width="0dp"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_marginTop="25dp"
+            android:gravity="center"
+            android:textStyle="italic|bold"
+            android:textColor="@color/black"
+            android:text="&lt;        Today`s Schedule        &gt;"
+            android:textSize="19dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/navbtn">
 
         </TextView>
 
@@ -40,7 +49,7 @@
             android:id="@+id/dateRV"
             android:layout_marginTop="25dp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/navbtn"
+            app:layout_constraintTop_toBottomOf="@+id/dateTV"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
@@ -58,10 +67,11 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:paddingBottom="22dp"
+            android:background="@color/white"
             android:layout_marginTop="14dp"
             android:layout_width="match_parent"
             app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-            app:spanCount="1"
+            app:spanCount="2"
             tools:listitem="@layout/welcomescreengrid"
             android:layout_height="wrap_content">
         </androidx.recyclerview.widget.RecyclerView>
