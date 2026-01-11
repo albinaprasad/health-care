@@ -2,9 +2,11 @@ package com.example.healthcare.views.mainScreen
 
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
@@ -44,6 +46,9 @@ class MainScreenActivity : AppCompatActivity() {
             insets
         }
 
+        val bottomNav = binding.bottomNav
+        bottomNav.itemIconTintList = null
+
        setUpListeners()
         setUpNavDrawer()
         setUpAdapter()
@@ -57,7 +62,7 @@ class MainScreenActivity : AppCompatActivity() {
             GridItem(R.drawable.ic_password, "Prescription")
         )
 
-        binding.recyclerView.layoutManager= GridLayoutManager(this@MainScreenActivity,1)
+        binding.recyclerView.layoutManager= GridLayoutManager(this@MainScreenActivity,2)
         binding.recyclerView.adapter = WelcomeScreenAdapter(items)
     }
 
@@ -94,6 +99,7 @@ class MainScreenActivity : AppCompatActivity() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun setDateAdapter() {
         val date = generateCurrentMonthDay()
         binding.dateRV.layoutManager =
@@ -101,6 +107,7 @@ class MainScreenActivity : AppCompatActivity() {
         binding.dateRV.adapter = CalendarAdapter(date)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun generateCurrentMonthDay(): List<calenderDay>{
         val list =mutableListOf<calenderDay>()
         val today = LocalDate.now()

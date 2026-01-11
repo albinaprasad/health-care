@@ -10,7 +10,7 @@
     app:strokeWidth="1.5dp"
     android:layout_marginHorizontal="10dp"
     android:layout_marginVertical="10dp"
-    app:strokeColor="@color/green"
+    app:strokeColor="#FFBF69"
     android:focusable="true"
     android:clickable="true"
     app:cardBackgroundColor="#00A1A9"

@@ -7,4 +7,9 @@
         <item name="cornerSize">50%</item>
     </style>
 
+
+    <style name="BottomNavigationTheme" parent="Widget.MaterialComponents.BottomNavigationView">
+        <item name="itemIconTint">@android:color/transparent</item>
+    </style>
+
 </resources>
