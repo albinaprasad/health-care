@@ -19,6 +19,7 @@ import com.example.healthcare.adapters.WelcomeScreenAdapter
 import com.example.healthcare.databinding.ActivityMainScreenBinding
 import com.example.healthcare.dataclasses.GridItem
 import com.example.healthcare.dataclasses.calenderDay
+import com.example.healthcare.views.signUp.SignUpActivity
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.TextStyle
@@ -34,6 +35,7 @@ class MainScreenActivity : AppCompatActivity() {
     }
     lateinit var binding: ActivityMainScreenBinding
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -90,6 +92,10 @@ class MainScreenActivity : AppCompatActivity() {
                 }
                 drawerLayout.closeDrawer(GravityCompat.START)
                 true
+            }
+
+            dateTV.setOnClickListener {
+                SignUpActivity.startActivity(this@MainScreenActivity)
             }
         }
         binding.main.setOnClickListener {

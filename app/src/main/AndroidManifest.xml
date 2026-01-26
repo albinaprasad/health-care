@@ -12,6 +12,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Healthcare">
         <activity
+            android:name=".views.signUp.SignUpActivity"
+            android:exported="false" />
+        <activity
             android:name=".views.mainScreen.MainScreenActivity"
             android:exported="false" />
         <activity

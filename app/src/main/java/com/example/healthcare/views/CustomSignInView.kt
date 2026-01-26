@@ -14,6 +14,7 @@ class CustomSignInView @JvmOverloads constructor(
 
     private val binding : CustomSignInLayoutBinding
     private var onLoginClick :(()-> Unit)? = null
+    private var onSignUPClick :(()-> Unit)? = null
 
 
     init
@@ -23,11 +24,19 @@ class CustomSignInView @JvmOverloads constructor(
         binding.loginBtn.setOnClickListener {
             onLoginClick?.invoke()
         }
+        binding.forgetPasswordBtn.setOnClickListener {
+            onSignUPClick?.invoke()
+        }
     }
 
     fun setLoginButtonClick(listener: ()-> Unit){
         onLoginClick = listener
 
     }
+
+    fun signUpClick(listener: () -> Unit){
+        onSignUPClick = listener
+    }
+
 
 }
