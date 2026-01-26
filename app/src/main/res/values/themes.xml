@@ -7,4 +7,13 @@
         <item name="cornerSize">50%</item>
     </style>
 
+    <style name="Theme.apptheme" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Brand colors -->
+        <item name="colorPrimary">@color/Pink</item>
+        <item name="colorSecondary">@color/Pink</item>
+
+        <!-- Controls animation + ripple -->
+        <item name="colorControlActivated">@color/Pink</item>
+    </style>
+
 </resources>
