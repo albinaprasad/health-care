@@ -33,7 +33,6 @@
         android:gravity="center"
         android:clickable="true"
         android:focusable="true"
-        android:selected="true"
         android:background="@drawable/round_green_circle"
         android:textSize="27dp"
         android:padding="6dp"

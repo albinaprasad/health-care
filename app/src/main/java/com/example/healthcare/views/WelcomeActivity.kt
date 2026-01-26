@@ -11,6 +11,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.example.healthcare.databinding.ActivityWelcomeBinding
 import com.example.healthcare.viewModels.WelcomeScreenViewModel
 import com.example.healthcare.views.mainScreen.MainScreenActivity
+import com.example.healthcare.views.signUp.SignUpActivity
 import kotlinx.coroutines.launch
 class WelcomeActivity : AppCompatActivity() {
     lateinit var binding: ActivityWelcomeBinding
@@ -38,6 +39,11 @@ class WelcomeActivity : AppCompatActivity() {
                 MainScreenActivity.startActivity(this@WelcomeActivity)
 
             }
+            SignInView.signUpClick {
+                SignUpActivity.startActivity(this@WelcomeActivity)
+            }
+
+
 
         }
     }

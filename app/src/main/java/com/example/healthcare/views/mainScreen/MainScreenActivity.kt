@@ -2,18 +2,28 @@ package com.example.healthcare.views.mainScreen
 
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.healthcare.R
+import com.example.healthcare.adapters.CalendarAdapter
 import com.example.healthcare.adapters.WelcomeScreenAdapter
 import com.example.healthcare.databinding.ActivityMainScreenBinding
 import com.example.healthcare.dataclasses.GridItem
+import com.example.healthcare.dataclasses.calenderDay
+import com.example.healthcare.views.signUp.SignUpActivity
+import java.time.LocalDate
+import java.time.YearMonth
+import java.time.format.TextStyle
+import java.util.Locale
 
 class MainScreenActivity : AppCompatActivity() {
 
@@ -25,6 +35,7 @@ class MainScreenActivity : AppCompatActivity() {
     }
     lateinit var binding: ActivityMainScreenBinding
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -37,9 +48,13 @@ class MainScreenActivity : AppCompatActivity() {
             insets
         }
 
+        val bottomNav = binding.bottomNav
+        bottomNav.itemIconTintList = null
+
        setUpListeners()
         setUpNavDrawer()
         setUpAdapter()
+        setDateAdapter()
     }
     private fun setUpAdapter(){
         val items = listOf(
@@ -49,7 +64,7 @@ class MainScreenActivity : AppCompatActivity() {
             GridItem(R.drawable.ic_password, "Prescription")
         )
 
-        binding.recyclerView.layoutManager= GridLayoutManager(this@MainScreenActivity,1)
+        binding.recyclerView.layoutManager= GridLayoutManager(this@MainScreenActivity,2)
         binding.recyclerView.adapter = WelcomeScreenAdapter(items)
     }
 
@@ -78,12 +93,46 @@ class MainScreenActivity : AppCompatActivity() {
                 drawerLayout.closeDrawer(GravityCompat.START)
                 true
             }
+
+            dateTV.setOnClickListener {
+                SignUpActivity.startActivity(this@MainScreenActivity)
+            }
         }
         binding.main.setOnClickListener {
             if(binding.drawerLayout.isDrawerOpen(GravityCompat.START)){
                 binding.drawerLayout.closeDrawer(GravityCompat.START)
             }
         }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun setDateAdapter() {
+        val date = generateCurrentMonthDay()
+        binding.dateRV.layoutManager =
+            LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        binding.dateRV.adapter = CalendarAdapter(date)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun generateCurrentMonthDay(): List<calenderDay>{
+        val list =mutableListOf<calenderDay>()
+        val today = LocalDate.now()
+        val currentMonth = YearMonth.now()
+        for (day in 1..currentMonth.lengthOfMonth()) {
+            val date = currentMonth.atDay(day)
+
+            val letter = date.dayOfWeek.name.first().toString()
+
+            list.add(
+                calenderDay(
+                    dayName =letter,
+                    date = day,
+                    isToday = date == today
+                )
+            )
+        }
+        return list
+
     }
 
 
