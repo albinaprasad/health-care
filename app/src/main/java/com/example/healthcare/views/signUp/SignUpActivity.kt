@@ -3,33 +3,35 @@ package com.example.healthcare.views.signUp
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import com.example.healthcare.R
+import com.example.healthcare.api.RetrofitClient
 import com.example.healthcare.databinding.ActivitySignUpBinding
-import com.example.healthcare.databinding.ActivityWelcomeBinding
-import com.example.healthcare.views.mainScreen.MainScreenActivity
-import org.json.JSONObject
+import com.example.healthcare.dataclasses.ElderSignupRequest
+import kotlinx.coroutines.launch
 
 class SignUpActivity : AppCompatActivity() {
-    companion object{
-        fun startActivity(context: Context){
+
+    companion object {
+        fun startActivity(context: Context) {
             val intent = Intent(context, SignUpActivity::class.java)
             context.startActivity(intent)
         }
     }
 
-    lateinit var binding: ActivitySignUpBinding
+    private lateinit var binding: ActivitySignUpBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)   // ✅ MUST be first
+
         binding = ActivitySignUpBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -38,49 +40,81 @@ class SignUpActivity : AppCompatActivity() {
             insets
         }
 
-       loginButtonClick()
+        setupSignUpClick()
     }
 
-    private fun loginButtonClick() {
+    private fun setupSignUpClick() {
 
+        binding.SignUpBtn.setOnClickListener {
 
-        with(binding) {
-            binding.SignUpBtn.setOnClickListener {
+            val name = binding.nameInput.text.toString().trim()
+            val email = binding.emailInput.text.toString().trim()
+            val ageText = binding.ageInput.text.toString().trim()
+            val password = binding.passwordInput.text.toString().trim()
 
-                // Get input values
-                val name = nameInput.text.toString().trim()
-                val email = emailInput.text.toString().trim()
-                val age = ageInput.text.toString().trim()
-                val password = passwordInput.text.toString().trim()
+            val gender = when (binding.genderRadioGroup.checkedRadioButtonId) {
+                R.id.radioMale -> "Male"
+                R.id.radioFemale -> "Female"
+                else -> ""
+            }
 
-                val gender = when (genderRadioGroup.checkedRadioButtonId) {
-                    R.id.radioMale -> "Male"
-                    R.id.radioFemale -> "Female"
-                    else -> ""
+            if (name.isEmpty() || email.isEmpty() || ageText.isEmpty()
+                || password.isEmpty() || gender.isEmpty()
+            ) {
+                Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val age = ageText.toIntOrNull()
+            if (age == null) {
+                Toast.makeText(this, "Enter a valid age", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val request = ElderSignupRequest(
+                elderName = name,
+                elderMail = email,
+                age = age,
+                gender = gender,
+                password = password
+            )
+
+            callSignUpApi(request)
+
+        }
+    }
+
+    fun callSignUpApi(request: ElderSignupRequest) {
+        lifecycleScope.launch {
+            try {
+                val response = RetrofitClient.api.signupElder(request)
+
+                if (response.isSuccessful) {
+                    Toast.makeText(
+                        this@SignUpActivity,
+                        "Signup successful",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    // Optional: navigate to main screen
+                    // startActivity(Intent(this@SignUpActivity, MainScreenActivity::class.java))
+                    // finish()
+
+                } else {
+                    Toast.makeText(
+                        this@SignUpActivity,
+                        "Signup failed: ${response.code()}",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
 
-                // Basic validation
-                if (name.isEmpty() || email.isEmpty() || age.isEmpty() || gender.isEmpty() || password.isEmpty()) {
-                    Toast.makeText(this@SignUpActivity, "Please fill all fields", Toast.LENGTH_SHORT).show()
-                    return@setOnClickListener
-                }
-
-                // Create JSON
-                val jsonObject = JSONObject().apply {
-                    put("elderName", name)
-                    put("elderMail", email)
-                    put("age", age.toInt())
-                    put("gender", gender)
-                    put("password", password)
-                }
-
-                // Convert to string
-                val jsonString = jsonObject.toString()
-
-                // Log / send / save
-                Log.d("SIGN_UP_JSON", jsonString)
+            } catch (e: Exception) {
+                Toast.makeText(
+                    this@SignUpActivity,
+                    "Network error: ${e.localizedMessage}",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
-
     }
 }
