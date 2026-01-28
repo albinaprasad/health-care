@@ -101,11 +101,21 @@ class SignUpActivity : AppCompatActivity() {
                     // finish()
 
                 } else {
-                    Toast.makeText(
-                        this@SignUpActivity,
-                        "Signup failed: ${response.code()}",
-                        Toast.LENGTH_SHORT
-                    ).show()
+
+                    when(response.code())
+                    {
+                        409->  Toast.makeText(
+                            this@SignUpActivity,
+                            "User already exist",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        else ->      Toast.makeText(
+                            this@SignUpActivity,
+                            "Signup failed: ${response.code()}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+
                 }
 
             } catch (e: Exception) {
