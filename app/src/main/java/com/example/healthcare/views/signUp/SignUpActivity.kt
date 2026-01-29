@@ -90,6 +90,7 @@ class SignUpActivity : AppCompatActivity() {
             )
 
             callSignUpApi(request)
+            finish()
 
         }
     }
