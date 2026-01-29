@@ -13,6 +13,7 @@ import com.example.healthcare.R
 import com.example.healthcare.api.RetrofitClient
 import com.example.healthcare.databinding.ActivitySignUpBinding
 import com.example.healthcare.dataclasses.ElderSignupRequest
+import com.example.healthcare.views.WelcomeActivity
 import kotlinx.coroutines.launch
 
 class SignUpActivity : AppCompatActivity() {
@@ -41,6 +42,15 @@ class SignUpActivity : AppCompatActivity() {
         }
 
         setupSignUpClick()
+        setClickListeners()
+    }
+
+    fun setClickListeners(){
+        with(binding){
+            signInBtn.setOnClickListener {
+                finish()
+            }
+        }
     }
 
     private fun setupSignUpClick() {
@@ -87,7 +97,7 @@ class SignUpActivity : AppCompatActivity() {
     fun callSignUpApi(request: ElderSignupRequest) {
         lifecycleScope.launch {
             try {
-                val response = RetrofitClient.api.signupElder(request)
+                val response = RetrofitClient.signUPApi.signupElder(request)
 
                 if (response.isSuccessful) {
                     Toast.makeText(

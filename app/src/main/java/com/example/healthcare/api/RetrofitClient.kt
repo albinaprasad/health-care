@@ -23,12 +23,15 @@ object RetrofitClient {
         .setLenient()
         .create()
 
-    val api: ElderApiService by lazy {
+    private val retrofit: Retrofit by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
             .client(client)
-            .addConverterFactory(GsonConverterFactory.create(gson))
+            .addConverterFactory(GsonConverterFactory.create())
             .build()
-            .create(ElderApiService::class.java)
+    }
+
+    val signUPApi: ElderApiService by lazy {
+           retrofit.create(ElderApiService::class.java)
     }
 }

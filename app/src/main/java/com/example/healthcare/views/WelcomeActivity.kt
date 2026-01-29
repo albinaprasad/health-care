@@ -1,5 +1,7 @@
 package com.example.healthcare.views
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.activity.enableEdgeToEdge
@@ -14,6 +16,12 @@ import com.example.healthcare.views.mainScreen.MainScreenActivity
 import com.example.healthcare.views.signUp.SignUpActivity
 import kotlinx.coroutines.launch
 class WelcomeActivity : AppCompatActivity() {
+    companion object{
+        fun startActivity(context: Context){
+            val intent = Intent(context, WelcomeActivity::class.java)
+            context.startActivity(intent)
+        }
+    }
     lateinit var binding: ActivityWelcomeBinding
     private val viewmodel: WelcomeScreenViewModel by viewModels()
 
@@ -43,8 +51,6 @@ class WelcomeActivity : AppCompatActivity() {
                 SignUpActivity.startActivity(this@WelcomeActivity)
             }
 
-
-
         }
     }
 
@@ -54,7 +60,7 @@ class WelcomeActivity : AppCompatActivity() {
            repeatOnLifecycle(Lifecycle.State.STARTED){
 
                viewmodel.animationState.collect { value ->
-                   if(value == true){
+                   if(value){
                        animateViews()
                    }
                }
