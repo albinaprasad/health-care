@@ -81,7 +81,7 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <TextView
-        android:id="@+id/forgetPasswordBtn"
+        android:id="@+id/signUpText"
         android:textStyle="bold"
         android:textColor="@color/Pink"
         android:layout_margin="12dp"
@@ -103,7 +103,7 @@
         android:background="@drawable/pink_round_corner"
         app:layout_constraintEnd_toEndOf="@+id/passwordLayot"
         app:layout_constraintStart_toStartOf="@+id/passwordLayot"
-        app:layout_constraintTop_toBottomOf="@+id/forgetPasswordBtn">
+        app:layout_constraintTop_toBottomOf="@+id/signUpText">
 
     </androidx.appcompat.widget.AppCompatButton>
 

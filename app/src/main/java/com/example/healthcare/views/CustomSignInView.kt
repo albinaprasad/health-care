@@ -24,7 +24,7 @@ class CustomSignInView @JvmOverloads constructor(
         binding.loginBtn.setOnClickListener {
             onLoginClick?.invoke()
         }
-        binding.forgetPasswordBtn.setOnClickListener {
+        binding.signUpText.setOnClickListener {
             onSignUPClick?.invoke()
         }
     }
