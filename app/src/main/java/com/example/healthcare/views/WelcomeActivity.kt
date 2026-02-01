@@ -1,27 +1,41 @@
 package com.example.healthcare.views
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.example.healthcare.databinding.ActivityWelcomeBinding
+import com.example.healthcare.services.LocationService
 import com.example.healthcare.viewModels.WelcomeScreenViewModel
 import com.example.healthcare.views.mainScreen.MainScreenActivity
 import com.example.healthcare.views.signUp.SignUpActivity
 import kotlinx.coroutines.launch
+
 class WelcomeActivity : AppCompatActivity() {
-    companion object{
-        fun startActivity(context: Context){
+    companion object {
+        private const val TAG = "WelcomeActivity"
+        private const val PERMISSION_FINE_LOCATION = 1
+        private const val PERMISSION_BACKGROUND_LOCATION = 2
+
+        fun startActivity(context: Context) {
             val intent = Intent(context, WelcomeActivity::class.java)
             context.startActivity(intent)
         }
     }
+
     lateinit var binding: ActivityWelcomeBinding
     private val viewmodel: WelcomeScreenViewModel by viewModels()
 
@@ -29,12 +43,86 @@ class WelcomeActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+
         binding = ActivityWelcomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        checkPermission()
         setUplisteners()
         observeViewModels()
+    }
 
+    private fun checkPermission() {
+
+        // Step 1: Check FINE location
+        val fineLocationGranted = ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+
+        if (!fineLocationGranted) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                PERMISSION_FINE_LOCATION
+            )
+            return
+        }
+
+        // Step 2: Check BACKGROUND location (Android 10+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val backgroundLocationGranted = ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_BACKGROUND_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+
+            if (!backgroundLocationGranted) {
+
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION),
+                    PERMISSION_BACKGROUND_LOCATION
+                )
+                return
+            }
+        }
+
+        // Step 3: Start service
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+
+            startLocationService()
+        } else {
+
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun startLocationService() {
+
+        try {
+            val intent = Intent(this, LocationService::class.java)
+            startForegroundService(intent)
+
+        } catch (e: Exception) {
+
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        if (grantResults.isNotEmpty()) {
+            val granted = grantResults[0] == PackageManager.PERMISSION_GRANTED
+
+            if (granted) {
+                checkPermission()
+            }
+        }
     }
 
     private fun setUplisteners() {
@@ -45,33 +133,28 @@ class WelcomeActivity : AppCompatActivity() {
 
             SignInView.setLoginButtonClick {
                 MainScreenActivity.startActivity(this@WelcomeActivity)
-
             }
+
             SignInView.signUpClick {
                 SignUpActivity.startActivity(this@WelcomeActivity)
             }
-
         }
     }
 
-
     private fun observeViewModels(){
-       lifecycleScope.launch {
-           repeatOnLifecycle(Lifecycle.State.STARTED){
-
-               viewmodel.animationState.collect { value ->
-                   if(value){
-                       animateViews()
-                   }
-               }
-           }
-
-       }
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED){
+                viewmodel.animationState.collect { value ->
+                    if(value){
+                        animateViews()
+                    }
+                }
+            }
+        }
     }
 
     private fun animateViews() {
         with(binding) {
-
             SignInView.alpha = 0f
             SignInView.visibility = View.VISIBLE
 
@@ -79,19 +162,16 @@ class WelcomeActivity : AppCompatActivity() {
             welcomeDescription.alpha = 1f
             btnContinue.alpha = 1f
 
-
             imageView.animate()
                 .translationY(-500f)
                 .setDuration(900)
                 .start()
 
-            // Animate SignInView fading in
             SignInView.animate()
                 .alpha(1f)
                 .setDuration(900)
                 .start()
 
-            // Animate the welcome texts and button fading out together
             welcomeText.animate()
                 .alpha(0f)
                 .setDuration(900)
@@ -106,14 +186,11 @@ class WelcomeActivity : AppCompatActivity() {
                 .alpha(0f)
                 .setDuration(900)
                 .withEndAction {
-                    // Only hide them after their fade-out completes
                     welcomeText.visibility = View.GONE
                     welcomeDescription.visibility = View.GONE
                     btnContinue.visibility = View.GONE
                 }
                 .start()
         }
-
-
     }
 }
