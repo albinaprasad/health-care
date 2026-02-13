@@ -27,10 +27,13 @@
     <!-- Alarm Clock Icon -->
     <ImageView
         android:id="@+id/alarmIcon"
-        android:layout_width="@dimen/icon_size_medium"
-        android:layout_height="@dimen/icon_size_medium"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:contentDescription="@string/alarm_icon"
-        app:tint="@android:color/white"
+        android:src="@drawable/pulse_alert_48dp_1f1f1f_fill0_wght400_grad0_opsz48"
+        android:scaleX="2"
+        android:scaleY="2"
+
         app:layout_constraintTop_toBottomOf="@id/timeDisplay"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
