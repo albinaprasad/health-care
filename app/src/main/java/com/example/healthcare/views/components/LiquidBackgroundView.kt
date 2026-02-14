@@ -10,9 +10,8 @@ import android.graphics.Shader
 import android.util.AttributeSet
 import android.view.View
 import android.view.animation.LinearInterpolator
-import kotlin.math.cos
 import kotlin.math.hypot
-import kotlin.math.sin
+import kotlin.math.min
 import kotlin.random.Random
 
 class LiquidBackgroundView @JvmOverloads constructor(
@@ -23,20 +22,31 @@ class LiquidBackgroundView @JvmOverloads constructor(
 
     private val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     
-    // Particle Paint (Cyan/Blue - "The Perfect Version")
-    private val particlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+    // Dot Paint (Crisp Cyan/White)
+    private val dotPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.FILL
+        color = Color.parseColor("#8044D9E6") // Semi-transparent Cyan
+    }
+
+    // Line Paint (Faint connectivity)
+    private val linePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
+        strokeWidth = 2f
         strokeCap = Paint.Cap.ROUND
         color = Color.parseColor("#44D9E6") // Bright Cyan
     }
 
-    private val particles = mutableListOf<SpiralParticle>()
+    private val particles = mutableListOf<ConstellationParticle>()
     
+    // Connection Threshold (pixels)
+    private val connectionDist = 250f 
+
     private val animator = ValueAnimator.ofFloat(0f, 1f).apply {
         duration = 1000 
         repeatCount = ValueAnimator.INFINITE
         interpolator = LinearInterpolator()
         addUpdateListener {
+            updatePhysics()
             invalidate()
         }
     }
@@ -66,26 +76,39 @@ class LiquidBackgroundView @JvmOverloads constructor(
 
             // Initialize Particles
             particles.clear()
-            for (i in 0 until 180) { 
-                 particles.add(createParticle(w, h, true))
+            // Fewer particles for N^2 connection check performance & cleaner look
+            for (i in 0 until 65) { 
+                 particles.add(createParticle(w, h))
             }
         }
     }
     
-    private fun createParticle(w: Float, h: Float, randomizeDist: Boolean): SpiralParticle {
-        val maxDist = hypot(w / 2.0, h / 2.0).toFloat()
-        val startDist = if (randomizeDist) Random.nextFloat() * maxDist else 0f
-        
-        return SpiralParticle(
-            angle = Random.nextDouble(0.0, 2 * Math.PI),
-            dist = startDist,
-            // SLOWER SPEED (Reduced by ~50%)
-            radialSpeed = Random.nextFloat() * 2f + 1f, 
-            angularSpeed = (Random.nextDouble(0.5, 1.5) * 0.01).toFloat(),
-            // INCREASED THICKNESS ("Little bit of width")
-            baseLength = Random.nextFloat() * 20f + 5f, 
-            thickness = Random.nextFloat() * 6f + 4f    // 4px to 10px (Thicker than original 2-6px)
+    private fun createParticle(w: Float, h: Float): ConstellationParticle {
+        return ConstellationParticle(
+            x = Random.nextFloat() * w,
+            y = Random.nextFloat() * h,
+            vx = (Random.nextFloat() - 0.5f) * 0.8f, // Very slow drift
+            vy = (Random.nextFloat() - 0.5f) * 0.8f,
+            radius = Random.nextFloat() * 3f + 2f     // Small dots (2-5px)
         )
+    }
+
+    private fun updatePhysics() {
+        val w = width.toFloat()
+        val h = height.toFloat()
+        if (w == 0f || h == 0f) return
+
+        particles.forEach { p ->
+            // Update Position
+            p.x += p.vx
+            p.y += p.vy
+
+            // Wall Bouncing (Keep them inside)
+            if (p.x < 0) { p.x = 0f; p.vx *= -1f }
+            if (p.x > w) { p.x = w; p.vx *= -1f }
+            if (p.y < 0) { p.y = 0f; p.vy *= -1f }
+            if (p.y > h) { p.y = h; p.vy *= -1f }
+        }
     }
 
     override fun onDetachedFromWindow() {
@@ -98,77 +121,43 @@ class LiquidBackgroundView @JvmOverloads constructor(
         
         val w = width.toFloat()
         val h = height.toFloat()
-        val cx = w / 2
-        val cy = h / 2
-        val maxDist = hypot(w / 2.0, h / 2.0).toFloat()
 
         // Draw Background
         canvas.drawRect(0f, 0f, w, h, bgPaint)
 
-        // Draw Particles
-        val iter = particles.listIterator()
-        while (iter.hasNext()) {
-            val p = iter.next()
-            
-            // Update Physics
-            p.dist += p.radialSpeed
-            p.angle += p.angularSpeed
-
-            // Respawn
-            if (p.dist > maxDist * 1.1f) {
-                 iter.set(createParticle(w, h, false))
-                 continue
+        // Draw Connections First (Behind dots)
+        // O(N^2) loop - acceptable for N=65
+        for (i in 0 until particles.size) {
+            val p1 = particles[i]
+            for (j in i + 1 until particles.size) {
+                val p2 = particles[j]
+                
+                val dx = p1.x - p2.x
+                val dy = p1.y - p2.y
+                val distSq = dx*dx + dy*dy
+                
+                // Avoid sqrt if possible, check squared distance
+                if (distSq < connectionDist * connectionDist) {
+                    val dist = kotlin.math.sqrt(distSq)
+                    val alpha = ((1f - dist / connectionDist) * 150).toInt() // Max alpha 150
+                    
+                    linePaint.alpha = alpha
+                    canvas.drawLine(p1.x, p1.y, p2.x, p2.y, linePaint)
+                }
             }
+        }
 
-            // Calculations
-            val progress = (p.dist / maxDist).coerceIn(0f, 1f)
-            val currentLength = p.baseLength * (1f + progress)
-            
-            // Alpha fade
-            val alpha = when {
-                progress < 0.15f -> (progress / 0.15f * 255).toInt() 
-                progress > 0.85f -> ((1f - progress) / 0.15f * 255).toInt()
-                else -> 255
-            }
-
-            // VIBRATION EFFECT
-            // Add random jitter to angle and distance for this frame only
-            val vibrateAngle = p.angle + (Random.nextDouble() - 0.5) * 0.005 // Jitter angle
-            val vibrateDist = p.dist + (Random.nextFloat() - 0.5f) * 2f    // Jitter distance (shaking)
-
-            val cosA = cos(vibrateAngle).toFloat()
-            val sinA = sin(vibrateAngle).toFloat()
-            
-            val headX = cx + cosA * vibrateDist
-            val headY = cy + sinA * vibrateDist
-            
-            // Tangent Alignment
-            val tanV = p.dist * p.angularSpeed
-            val radV = p.radialSpeed
-            val speedTotal = hypot(tanV, radV)
-            
-            val dirRad = radV / speedTotal
-            val dirTan = tanV / speedTotal
-            
-            val vecX = dirRad * cosA - dirTan * sinA
-            val vecY = dirRad * sinA + dirTan * cosA
-            
-            val tailX = headX - vecX * currentLength
-            val tailY = headY - vecY * currentLength
-
-            particlePaint.strokeWidth = p.thickness
-            particlePaint.alpha = alpha   
-            
-            canvas.drawLine(tailX, tailY, headX, headY, particlePaint)
+        // Draw Dots
+        particles.forEach { p ->
+            canvas.drawCircle(p.x, p.y, p.radius, dotPaint)
         }
     }
 
-    private class SpiralParticle(
-        var angle: Double,
-        var dist: Float,
-        val radialSpeed: Float,
-        val angularSpeed: Float,
-        val baseLength: Float,
-        val thickness: Float
+    private class ConstellationParticle(
+        var x: Float,
+        var y: Float,
+        var vx: Float,
+        var vy: Float,
+        val radius: Float
     )
 }
