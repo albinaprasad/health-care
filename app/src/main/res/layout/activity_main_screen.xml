@@ -11,64 +11,112 @@
     <!-- MAIN CONTENT -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/main"
-        android:background="@color/white"
+        android:background="@drawable/bg_main_gradient"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <!-- Your screen content here -->
-
-        <ImageButton
-            android:id="@+id/navbtn"
-            android:layout_width="wrap_content"
+        <!-- HEADER SECTION -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/headerLayout"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_nav_icon"
-            android:background="@color/Pink"
-            android:layout_margin="12dp"
-            app:layout_constraintStart_toStartOf="parent"
+            android:padding="24dp"
             app:layout_constraintTop_toTopOf="parent"
-            >
-        </ImageButton>
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
+            <ImageButton
+                android:id="@+id/navbtn"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_nav_icon"
+                android:background="@drawable/bg_glass_card"
+                android:padding="12dp"
+                android:scaleType="fitCenter"
+                app:tint="@color/primary_green"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+
+            <TextView
+                android:id="@+id/welcomeTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Welcome Back,"
+                android:textSize="14sp"
+                android:textColor="@color/text_secondary"
+                android:layout_marginStart="16dp"
+                app:layout_constraintStart_toEndOf="@id/navbtn"
+                app:layout_constraintTop_toTopOf="@id/navbtn"
+                app:layout_constraintBottom_toTopOf="@id/userName"/>
+
+            <TextView
+                android:id="@+id/userName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="User Name"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:layout_marginStart="16dp"
+                app:layout_constraintStart_toEndOf="@id/navbtn"
+                app:layout_constraintTop_toBottomOf="@id/welcomeTitle"
+                app:layout_constraintBottom_toBottomOf="@id/navbtn"/>
+
+            <ImageView
+                android:id="@+id/profileImage"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_user_profile"
+                android:background="@drawable/bg_glass_card"
+                android:padding="8dp"
+                app:tint="@color/primary_green"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- DATE SECTION -->
         <TextView
             android:id="@+id/dateTV"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="25dp"
-            android:gravity="center"
-            android:textStyle="italic|bold"
-            android:textColor="@color/black"
-            android:text="&lt;        Today`s Schedule        &gt;"
-            android:textSize="19dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/navbtn">
-
-        </TextView>
+            android:layout_marginTop="8dp"
+            android:layout_marginHorizontal="24dp"
+            android:gravity="start"
+            android:fontFamily="sans-serif-medium"
+            android:textColor="@color/text_primary"
+            android:text="Today's Schedule"
+            android:textSize="20sp"
+            app:layout_constraintTop_toBottomOf="@+id/headerLayout"/>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/dateRV"
-            android:layout_marginTop="25dp"
+            android:layout_marginTop="16dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/dateTV"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             android:orientation="horizontal"
-            android:elevation="14dp"
-            android:layout_marginHorizontal="14dp"
+            android:clipToPadding="false"
+            android:paddingHorizontal="18dp"
             tools:listitem="@layout/time_item"
             app:layout_constraintStart_toStartOf="parent">
-
         </androidx.recyclerview.widget.RecyclerView>
 
+        <!-- GRID SECTION -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView"
             app:layout_constraintTop_toBottomOf="@+id/dateRV"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:paddingBottom="22dp"
-            android:background="@color/white"
-            android:layout_marginTop="14dp"
+            android:paddingHorizontal="16dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="80dp"
+            android:clipToPadding="false"
+            android:layout_marginTop="8dp"
             android:layout_width="match_parent"
             app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
             app:spanCount="2"
@@ -78,27 +126,22 @@
         </androidx.recyclerview.widget.RecyclerView>
 
 
+        <!-- BOTTOM NAVIGATION -->
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/bottomNav"
-            android:layout_width="0dp"
-            android:layout_height="70dp"
-            android:layout_marginStart="24dp"
-            android:layout_marginEnd="24dp"
-            android:background="@drawable/curved_grey_background"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="24dp"
+            android:background="@drawable/bg_glass_card"
             app:menu="@menu/bottom_menu"
-            app:itemIconSize="28dp"
-            app:itemIconTint="@null"
-            app:itemBackground="@null"
-            app:itemActiveIndicatorStyle="@null"
+            app:itemIconSize="24dp"
+            app:itemIconTint="@color/primary_green"
             app:labelVisibilityMode="unlabeled"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:elevation="18dp">
-
-
+            app:elevation="8dp">
         </com.google.android.material.bottomnavigation.BottomNavigationView>
-
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

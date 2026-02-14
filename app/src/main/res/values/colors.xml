@@ -7,8 +7,19 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="Pink">#f28d8a</color>
-    <color name="green">#00A1A9</color>
+    
+    <!-- Professional Green Theme -->
+    <color name="primary_green">#00A1A9</color>
+    <color name="primary_green_dark">#007F85</color>
+    <color name="light_green_bg">#E6F6F7</color> <!-- Very light tint for gradient start -->
+    <color name="accent_orange">#FFBF69</color>
+
+    <color name="text_primary">#1F2937</color> <!-- Dark Grey for main text -->
+    <color name="text_secondary">#6B7280</color> <!-- Lighter Grey for subtitles -->
+    <color name="white_overlay">#E6FFFFFF</color> <!-- 90% White for glass effect -->
+
+    <color name="Pink">#f28d8a</color> <!-- Kept for legacy reference if needed, but deprecated -->
+    <color name="green">@color/primary_green</color>
     <color name="violet">#dd22ce</color>
 
     <!-- Button Colors -->
