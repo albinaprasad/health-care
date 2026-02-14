@@ -10,4 +10,12 @@
     <color name="Pink">#f28d8a</color>
     <color name="green">#00A1A9</color>
     <color name="violet">#dd22ce</color>
+
+    <!-- Button Colors -->
+    <color name="button_stop_color">#5A5A5A</color>
+    <color name="button_snooze_color">#E67E22</color>
+
+    <!-- Background Colors -->
+    <color name="background_start">#1a1a2e</color>
+    <color name="background_end">#0f0f1a</color>
 </resources>

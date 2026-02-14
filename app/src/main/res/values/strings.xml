@@ -1,4 +1,10 @@
 <resources>
     <string name="app_name">healthcare</string>
     <string name="welcome">Welcome</string>
+    <string name="alarm">Alarm</string>
+    <string name="stop">Stop</string>
+    <string name="snooze">Snooze</string>
+    <string name="default_time">9:41</string>
+    <string name="lock_icon">Lock Icon</string>
+    <string name="alarm_icon">Alarm Icon</string>
 </resources>
