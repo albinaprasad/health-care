@@ -10,7 +10,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 object RetrofitClient {
 
     private const val BASE_URL =
-        "https://disproportionable-unantagonistic-alvin.ngrok-free.dev/"
+        "https://disproportionable-unantagonistic-alvin.ngrok-free.dev"
 
     private val logging = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY

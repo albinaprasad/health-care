@@ -7,12 +7,19 @@ import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
+
+object PrefManager {
+    fun get(context: Context) = UserPreferenceSaving(context.applicationContext)
+}
+
+private val Context.dataStore by preferencesDataStore(name = "user_prefs")
+
 class UserPreferenceSaving(val context: Context) {
 
-    private val Context.dataStore by preferencesDataStore(name = "user_prefs")
 
     companion object {
         private val TOKEN_KEY = stringPreferencesKey("auth_token")
+
     }
 
     suspend fun saveToken(token: String) {
@@ -21,7 +28,7 @@ class UserPreferenceSaving(val context: Context) {
         }
     }
 
-    suspend fun getToken() : Flow<String?>{
+     fun getToken() : Flow<String?>{
        return context.dataStore.data.map{ preferences ->
           preferences[TOKEN_KEY]
         }

@@ -18,6 +18,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.example.healthcare.TokenManager.PrefManager
 import com.example.healthcare.TokenManager.UserPreferenceSaving
 import com.example.healthcare.api.RetrofitClient
 import com.example.healthcare.databinding.ActivityWelcomeBinding
@@ -39,7 +40,7 @@ class WelcomeActivity : AppCompatActivity() {
         }
     }
 
-    val userPreferenceObj = UserPreferenceSaving(this)
+    lateinit var userPreferenceObj: UserPreferenceSaving
     lateinit var binding: ActivityWelcomeBinding
     private val viewmodel: WelcomeScreenViewModel by viewModels()
 
@@ -51,7 +52,7 @@ class WelcomeActivity : AppCompatActivity() {
         binding = ActivityWelcomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        checkPermission()
+        userPreferenceObj = PrefManager.get(this)
         setUplisteners()
         observeViewModels()
     }
@@ -183,7 +184,9 @@ class WelcomeActivity : AppCompatActivity() {
         lifecycleScope.launch {
             userPreferenceObj.saveToken(token)
             Log.i("abc", "saveToken: $token")
+            checkPermission()
         }
+
     }
 
     private fun observeViewModels(){

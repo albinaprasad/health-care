@@ -24,7 +24,7 @@ import okhttp3.WebSocketListener
 
 class LocationService() : Service() {
 
-    private val httpUrl = "wss://starter-meetings-thompson-selections.trycloudflare.com/ws?token="
+    private val httpUrl = "wss://yourself-keen-pine-inner.trycloudflare.com/ws?token="
     private lateinit var locationClient: FusedLocationProviderClient
     private var webSocket: WebSocket? = null
     private lateinit var client: OkHttpClient
@@ -40,7 +40,7 @@ class LocationService() : Service() {
 
         connectWebSocket()
         startForeground(1, createNotification())
-        startLocationUpdates()
+
     }
 
     @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
@@ -83,8 +83,10 @@ class LocationService() : Service() {
 
             webSocket = client.newWebSocket(request, object : WebSocketListener() {
 
+                @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
                 override fun onOpen(webSocket: WebSocket, response: Response) {
                     Log.d("ABC", "WebSocket Connected")
+                    startLocationUpdates()
                 }
 
                 override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
