@@ -34,4 +34,8 @@ object RetrofitClient {
     val signUPApi: ElderApiService by lazy {
            retrofit.create(ElderApiService::class.java)
     }
+
+    val loginApi : ElderApiService by lazy{
+        retrofit.create(ElderApiService::class.java)
+    }
 }

@@ -8,6 +8,7 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
@@ -17,6 +18,8 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.example.healthcare.TokenManager.UserPreferenceSaving
+import com.example.healthcare.api.RetrofitClient
 import com.example.healthcare.databinding.ActivityWelcomeBinding
 import com.example.healthcare.services.LocationService
 import com.example.healthcare.viewModels.WelcomeScreenViewModel
@@ -26,7 +29,7 @@ import kotlinx.coroutines.launch
 
 class WelcomeActivity : AppCompatActivity() {
     companion object {
-        private const val TAG = "WelcomeActivity"
+
         private const val PERMISSION_FINE_LOCATION = 1
         private const val PERMISSION_BACKGROUND_LOCATION = 2
 
@@ -36,6 +39,7 @@ class WelcomeActivity : AppCompatActivity() {
         }
     }
 
+    val userPreferenceObj = UserPreferenceSaving(this)
     lateinit var binding: ActivityWelcomeBinding
     private val viewmodel: WelcomeScreenViewModel by viewModels()
 
@@ -131,13 +135,53 @@ class WelcomeActivity : AppCompatActivity() {
                 viewmodel.onContinueButtonClicked()
             }
 
-            SignInView.setLoginButtonClick {
+            SignInView.setLoginButtonClick {  email,password->
+                loginUser(email,password)
                 MainScreenActivity.startActivity(this@WelcomeActivity)
             }
 
             SignInView.signUpClick {
                 SignUpActivity.startActivity(this@WelcomeActivity)
             }
+        }
+    }
+
+    fun loginUser(email: String, password: String) {
+        lifecycleScope.launch {
+            try {
+                val requestBody = mapOf(
+                    "ElderMail" to email,
+                    "Password" to password)
+                val response = RetrofitClient.loginApi.loginElder(requestBody)
+
+                if (response.isSuccessful) {
+
+                    val token = response.body()?.get("token")
+
+                    if (token != null) {
+                        saveToken(token)
+                    }
+
+                } else {
+                    Toast.makeText(this@WelcomeActivity,
+                        "Login failed",
+                        Toast.LENGTH_SHORT).show()
+                }
+
+            } catch (e: Exception) {
+                Toast.makeText(this@WelcomeActivity,
+                    "Error: ${e.message}",
+                    Toast.LENGTH_SHORT).show()
+            }
+
+        }
+
+    }
+
+    private  fun saveToken(token: String) {
+        lifecycleScope.launch {
+            userPreferenceObj.saveToken(token)
+            Log.i("abc", "saveToken: $token")
         }
     }
 

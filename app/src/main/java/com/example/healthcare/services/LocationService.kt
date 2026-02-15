@@ -10,11 +10,25 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import androidx.core.app.NotificationCompat
+import com.example.healthcare.TokenManager.UserPreferenceSaving
 import com.google.android.gms.location.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
+import okhttp3.WebSocket
+import okhttp3.WebSocketListener
 
-class LocationService : Service() {
+class LocationService() : Service() {
 
+    private val httpUrl = "wss://starter-meetings-thompson-selections.trycloudflare.com/ws?token="
     private lateinit var locationClient: FusedLocationProviderClient
+    private var webSocket: WebSocket? = null
+    private lateinit var client: OkHttpClient
+    private lateinit var userPreferenceObj: UserPreferenceSaving
     val TIME_INTERVAL = 5000L
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -41,7 +55,7 @@ class LocationService : Service() {
             object : LocationCallback() {
                 override fun onLocationResult(result: LocationResult) {
                     for (location in result.locations) {
-                        showLocation(location)
+                        sendLocation(location)
                     }
                 }
             },
@@ -49,12 +63,44 @@ class LocationService : Service() {
         )
     }
 
-    private fun showLocation(location: Location) {
+    private fun connectWebSocket() {
+
+        client = OkHttpClient()
+
+        CoroutineScope(Dispatchers.IO).launch {
+
+            val token = userPreferenceObj.getToken().first()
+
+            if (token == null) {
+                Log.d("ABC", "Token not found")
+                return@launch
+            }
+
+            val request = Request.Builder()
+                .url(httpUrl+token)
+                .build()
+
+            webSocket = client.newWebSocket(request, object : WebSocketListener() {
+
+                override fun onOpen(webSocket: WebSocket, response: Response) {
+                    Log.d("ABC", "WebSocket Connected")
+                }
+
+                override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+                    Log.d("ABC", "WebSocket Error: ${t.message}")
+                }
+            })
+        }
+    }
+
+
+    private fun sendLocation(location: Location) {
         val lat = location.latitude
         val lon = location.longitude
 
         //log coordinates
         Log.d("ABC","Latitude: $lat  Longitude: $lon")
+        webSocket?.send("$lat,$lon")
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
