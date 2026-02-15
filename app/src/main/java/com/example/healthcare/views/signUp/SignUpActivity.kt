@@ -50,6 +50,9 @@ class SignUpActivity : AppCompatActivity() {
             signInBtn.setOnClickListener {
                 finish()
             }
+            btnBack.setOnClickListener {
+                finish()
+            }
         }
     }
 
