@@ -10,6 +10,7 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import androidx.core.app.NotificationCompat
+import com.example.healthcare.TokenManager.UrlPreferences
 import com.example.healthcare.TokenManager.UserPreferenceSaving
 import com.google.android.gms.location.*
 import kotlinx.coroutines.CoroutineScope
@@ -24,7 +25,7 @@ import okhttp3.WebSocketListener
 
 class LocationService() : Service() {
 
-    private val httpUrl = "wss://yourself-keen-pine-inner.trycloudflare.com/ws?token="
+    private var httpUrl = UrlPreferences.DEFAULT_WS_URL
     private lateinit var locationClient: FusedLocationProviderClient
     private var webSocket: WebSocket? = null
     private lateinit var client: OkHttpClient
@@ -68,8 +69,10 @@ class LocationService() : Service() {
 
         client = OkHttpClient()
         userPreferenceObj = UserPreferenceSaving(this)
+        val urlPreferences = UrlPreferences(this)
         CoroutineScope(Dispatchers.IO).launch {
 
+            httpUrl = urlPreferences.getWsUrlOnce()
             val token = userPreferenceObj.getToken().first()
 
             if (token == null) {

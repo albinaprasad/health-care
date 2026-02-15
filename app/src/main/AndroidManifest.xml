@@ -20,6 +20,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Healthcare">
         <activity
+            android:name=".views.urlConfig.UrlConfigActivity"
+            android:exported="false" />
+        <activity
             android:name=".views.alarmScreen.AlarmActivity"
             android:exported="false" />
         <activity

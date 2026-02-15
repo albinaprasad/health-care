@@ -26,6 +26,7 @@ import com.example.healthcare.services.LocationService
 import com.example.healthcare.viewModels.WelcomeScreenViewModel
 import com.example.healthcare.views.mainScreen.MainScreenActivity
 import com.example.healthcare.views.signUp.SignUpActivity
+import com.example.healthcare.views.urlConfig.UrlConfigActivity
 import kotlinx.coroutines.launch
 
 class WelcomeActivity : AppCompatActivity() {
@@ -53,6 +54,7 @@ class WelcomeActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         userPreferenceObj = PrefManager.get(this)
+        RetrofitClient.init(this)
         setUplisteners()
         observeViewModels()
     }
@@ -136,9 +138,12 @@ class WelcomeActivity : AppCompatActivity() {
                 viewmodel.onContinueButtonClicked()
             }
 
-            SignInView.setLoginButtonClick {  email,password->
-                loginUser(email,password)
+            btnSettings.setOnClickListener {
+                UrlConfigActivity.startActivity(this@WelcomeActivity)
+            }
 
+            SignInView.setLoginButtonClick { email, password ->
+                loginUser(email, password)
             }
 
             SignInView.signUpClick {
