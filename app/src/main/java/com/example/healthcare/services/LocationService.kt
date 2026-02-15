@@ -67,7 +67,7 @@ class LocationService() : Service() {
     private fun connectWebSocket() {
 
         client = OkHttpClient()
-
+        userPreferenceObj = UserPreferenceSaving(this)
         CoroutineScope(Dispatchers.IO).launch {
 
             val token = userPreferenceObj.getToken().first()
