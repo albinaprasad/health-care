@@ -162,29 +162,30 @@ class WelcomeActivity : AppCompatActivity() {
             welcomeDescription.alpha = 1f
             btnContinue.alpha = 1f
 
-            imageView.animate()
-                .translationY(-500f)
-                .setDuration(900)
+            // Fade away the dot animation
+            dotAnimationView.animate()
+                .alpha(0f)
+                .setDuration(1500)
                 .start()
 
             SignInView.animate()
                 .alpha(1f)
-                .setDuration(900)
+                .setDuration(1500)
                 .start()
 
             welcomeText.animate()
                 .alpha(0f)
-                .setDuration(900)
+                .setDuration(1500)
                 .start()
 
             welcomeDescription.animate()
                 .alpha(0f)
-                .setDuration(900)
+                .setDuration(1500)
                 .start()
 
             btnContinue.animate()
                 .alpha(0f)
-                .setDuration(900)
+                .setDuration(1500)
                 .withEndAction {
                     welcomeText.visibility = View.GONE
                     welcomeDescription.visibility = View.GONE

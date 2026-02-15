@@ -15,13 +15,23 @@
         app:layout_constraintGuide_percent="0.65">
 
     </androidx.constraintlayout.widget.Guideline>
+
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/gLcenter"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.42"
-        >
+        app:layout_constraintGuide_begin="374dp">
+
+    </androidx.constraintlayout.widget.Guideline>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gLTop"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.25">
+
     </androidx.constraintlayout.widget.Guideline>
 
     <androidx.constraintlayout.widget.Guideline
@@ -48,17 +58,15 @@
 
     </View>
 
-    <ImageView
-        android:id="@+id/imageView"
+    <!-- Dot Animation replacing the curved green ImageView -->
+    <com.example.healthcare.views.components.LiquidBackgroundView
+        android:id="@+id/dotAnimationView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:scaleType="fitXY"
-        android:src="@drawable/curved_green"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-    </ImageView>
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <TextView
         android:id="@+id/welcomeText"
@@ -68,7 +76,7 @@
         android:textSize="32dp"
         android:textStyle="bold|italic"
         android:layout_marginStart="24dp"
-        app:layout_constraintStart_toStartOf="@id/imageView"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/gL">
 
     </TextView>
@@ -80,7 +88,7 @@
         android:textStyle="italic"
         android:layout_marginStart="24dp"
         android:layout_marginTop="20dp"
-        app:layout_constraintStart_toStartOf="@+id/imageView"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/welcomeText"
         android:text="Hi Welcome!!!">
 
@@ -93,7 +101,7 @@
         android:layout_marginStart="24dp"
         android:layout_marginTop="20dp"
        app:layout_constraintTop_toTopOf="@id/gL2"
-        app:layout_constraintEnd_toEndOf="@id/imageView"
+        app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginEnd="16dp"
         android:text="Hi Welcome!!!">
 
@@ -101,15 +109,16 @@
 
     <!-- Fixed Custom View with proper constraints -->
     <com.example.healthcare.views.CustomSignInView
-        android:layout_marginTop="-23dp"
         android:id="@+id/SignInView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="-23dp"
         android:elevation="8dp"
         android:visibility="invisible"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/gLcenter" />
+        app:layout_constraintTop_toBottomOf="@id/gLTop" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

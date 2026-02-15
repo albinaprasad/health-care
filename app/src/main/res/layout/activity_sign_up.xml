@@ -27,7 +27,7 @@
         android:id="@+id/underline"
         android:layout_width="80dp"
         android:layout_height="4dp"
-        android:background="@color/primary_green"
+        android:background="@color/primary_blue"
         android:layout_marginTop="4dp"
         app:layout_constraintStart_toStartOf="@id/signInTitle"
         app:layout_constraintTop_toBottomOf="@id/signInTitle"/>
@@ -151,7 +151,7 @@
     <TextView
         android:id="@+id/signInBtn"
         android:textStyle="bold"
-        android:textColor="@color/primary_green"
+        android:textColor="@color/primary_blue"
         android:layout_margin="12dp"
         android:paddingHorizontal="12dp"
         app:layout_constraintEnd_toEndOf="@id/passwordInputLayout"

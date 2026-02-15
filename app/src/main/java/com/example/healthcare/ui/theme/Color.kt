@@ -2,16 +2,16 @@ package com.example.healthcare.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+val Blue80 = Color(0xFFB3D4FC)
+val BlueGrey80 = Color(0xFFBCC7DB)
+val LightBlue80 = Color(0xFFE8F0FE)
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+val Blue40 = Color(0xFF1A73E8)
+val BlueGrey40 = Color(0xFF5F6B7A)
+val DarkBlue40 = Color(0xFF1557B0)
 
-val Pink = Color(0xFFFAA0A0)
+val PrimaryBlue = Color(0xFF1A73E8)
 
 val Grey = Color(0xFF545151)
 
-val DarkPink = Color(0xFFf28d8a)
+val AccentBlueLight = Color(0xFF4DA3FF)

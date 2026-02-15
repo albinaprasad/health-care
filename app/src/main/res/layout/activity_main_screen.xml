@@ -52,7 +52,7 @@
                 android:background="@drawable/bg_glass_card"
                 android:padding="12dp"
                 android:scaleType="fitCenter"
-                app:tint="@color/primary_green"
+                app:tint="@color/primary_blue"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"/>
@@ -89,7 +89,7 @@
                 android:src="@drawable/ic_user_profile"
                 android:background="@drawable/bg_glass_card"
                 android:padding="8dp"
-                app:tint="@color/primary_green"
+                app:tint="@color/primary_blue"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"/>
@@ -154,7 +154,7 @@
             android:background="@drawable/bg_glass_card"
             app:menu="@menu/bottom_menu"
             app:itemIconSize="24dp"
-            app:itemIconTint="@color/primary_green"
+            app:itemIconTint="@color/primary_blue"
             app:labelVisibilityMode="unlabeled"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"

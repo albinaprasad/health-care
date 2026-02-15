@@ -22,18 +22,18 @@ class LiquidBackgroundView @JvmOverloads constructor(
 
     private val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     
-    // Dot Paint (Crisp Cyan/White)
+    // Dot Paint (Blue dots)
     private val dotPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL
-        color = Color.parseColor("#8044D9E6") // Semi-transparent Cyan
+        color = Color.parseColor("#801A73E8") // Semi-transparent Blue
     }
 
-    // Line Paint (Faint connectivity)
+    // Line Paint (Faint blue connectivity)
     private val linePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
         strokeWidth = 2f
         strokeCap = Paint.Cap.ROUND
-        color = Color.parseColor("#44D9E6") // Bright Cyan
+        color = Color.parseColor("#1A73E8") // Primary Blue
     }
 
     private val particles = mutableListOf<ConstellationParticle>()
@@ -51,9 +51,9 @@ class LiquidBackgroundView @JvmOverloads constructor(
         }
     }
 
-    // Static Background Colors (Dark Theme)
-    private val colorCenter = Color.parseColor("#020514") // Very Dark Blue/Black
-    private val colorEdge = Color.parseColor("#000000")   // Pure Black
+    // White/Light Blue Background
+    private val colorCenter = Color.parseColor("#FFFFFF") // White center
+    private val colorEdge = Color.parseColor("#E8F0FE")   // Light blue edge
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()

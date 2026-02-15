@@ -8,7 +8,7 @@
       android:fillColor="#9E9E9E"/>
   <path
       android:pathData="M106,18m-18,0a18,18 0,1 1,36 0a18,18 0,1 1,-36 0"
-      android:fillColor="#00A1A9"/>
+      android:fillColor="#1A73E8"/>
   <path
       android:pathData="M113.2,18H89.2"
       android:strokeLineJoin="round"
@@ -18,7 +18,7 @@
       android:strokeLineCap="square"/>
   <path
       android:pathData="M78.4,19.13C77.78,19.13 77.27,18.62 77.27,18C77.27,17.38 77.78,16.87 78.4,16.87V18V19.13ZM88,16.87H89.13V19.13H88V18V16.87ZM78.4,18V16.87H88V18V19.13H78.4V18Z"
-      android:fillColor="#00A1A9"/>
+      android:fillColor="#1A73E8"/>
   <path
       android:pathData="M109,13C109,13 114,16.68 114,18C114,19.32 109,23 109,23"
       android:strokeLineJoin="round"
