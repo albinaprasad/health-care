@@ -38,6 +38,7 @@ class LocationService() : Service() {
         Log.d("ABC", "LocationService created")
         locationClient = LocationServices.getFusedLocationProviderClient(this)
 
+        connectWebSocket()
         startForeground(1, createNotification())
         startLocationUpdates()
     }

@@ -137,7 +137,7 @@ class WelcomeActivity : AppCompatActivity() {
 
             SignInView.setLoginButtonClick {  email,password->
                 loginUser(email,password)
-                MainScreenActivity.startActivity(this@WelcomeActivity)
+
             }
 
             SignInView.signUpClick {
@@ -160,6 +160,7 @@ class WelcomeActivity : AppCompatActivity() {
 
                     if (token != null) {
                         saveToken(token)
+                        MainScreenActivity.startActivity(this@WelcomeActivity)
                     }
 
                 } else {
