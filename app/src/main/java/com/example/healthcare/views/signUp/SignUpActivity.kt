@@ -90,7 +90,7 @@ class SignUpActivity : AppCompatActivity() {
             )
 
             callSignUpApi(request)
-            finish()
+            //finish()
 
         }
     }
@@ -109,7 +109,7 @@ class SignUpActivity : AppCompatActivity() {
 
                     // Optional: navigate to main screen
                     // startActivity(Intent(this@SignUpActivity, MainScreenActivity::class.java))
-                    // finish()
+                     finish()
 
                 } else {
 
