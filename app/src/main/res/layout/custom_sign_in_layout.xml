@@ -15,7 +15,6 @@
         android:layout_height="wrap_content"
         android:background="@drawable/bg_form_card"
         android:padding="24dp"
-        android:elevation="6dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">

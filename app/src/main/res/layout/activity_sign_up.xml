@@ -111,7 +111,7 @@
                 app:boxCornerRadiusBottomEnd="14dp"
                 app:boxStrokeColor="@color/primary_blue"
                 app:hintTextColor="@color/primary_blue"
-                app:startIconDrawable="@drawable/ic_user_profile"
+                app:startIconDrawable="@drawable/ic_profile_round"
                 app:startIconTint="@color/primary_blue"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
