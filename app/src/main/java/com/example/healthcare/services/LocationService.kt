@@ -10,11 +10,26 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import androidx.core.app.NotificationCompat
+import com.example.healthcare.TokenManager.UrlPreferences
+import com.example.healthcare.TokenManager.UserPreferenceSaving
 import com.google.android.gms.location.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
+import okhttp3.WebSocket
+import okhttp3.WebSocketListener
 
-class LocationService : Service() {
+class LocationService() : Service() {
 
+    private var httpUrl = UrlPreferences.DEFAULT_WS_URL
     private lateinit var locationClient: FusedLocationProviderClient
+    private var webSocket: WebSocket? = null
+    private lateinit var client: OkHttpClient
+    private lateinit var userPreferenceObj: UserPreferenceSaving
     val TIME_INTERVAL = 5000L
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -24,8 +39,9 @@ class LocationService : Service() {
         Log.d("ABC", "LocationService created")
         locationClient = LocationServices.getFusedLocationProviderClient(this)
 
+        connectWebSocket()
         startForeground(1, createNotification())
-        startLocationUpdates()
+
     }
 
     @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
@@ -41,7 +57,7 @@ class LocationService : Service() {
             object : LocationCallback() {
                 override fun onLocationResult(result: LocationResult) {
                     for (location in result.locations) {
-                        showLocation(location)
+                        sendLocation(location)
                     }
                 }
             },
@@ -49,12 +65,48 @@ class LocationService : Service() {
         )
     }
 
-    private fun showLocation(location: Location) {
+    private fun connectWebSocket() {
+
+        client = OkHttpClient()
+        userPreferenceObj = UserPreferenceSaving(this)
+        val urlPreferences = UrlPreferences(this)
+        CoroutineScope(Dispatchers.IO).launch {
+
+            httpUrl = urlPreferences.getWsUrlOnce()
+            val token = userPreferenceObj.getToken().first()
+
+            if (token == null) {
+                Log.d("ABC", "Token not found")
+                return@launch
+            }
+
+            val request = Request.Builder()
+                .url(httpUrl+token)
+                .build()
+
+            webSocket = client.newWebSocket(request, object : WebSocketListener() {
+
+                @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
+                override fun onOpen(webSocket: WebSocket, response: Response) {
+                    Log.d("ABC", "WebSocket Connected")
+                    startLocationUpdates()
+                }
+
+                override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+                    Log.d("ABC", "WebSocket Error: ${t.message}")
+                }
+            })
+        }
+    }
+
+
+    private fun sendLocation(location: Location) {
         val lat = location.latitude
         val lon = location.longitude
 
         //log coordinates
         Log.d("ABC","Latitude: $lat  Longitude: $lon")
+        webSocket?.send("$lat,$lon")
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

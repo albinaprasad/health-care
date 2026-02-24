@@ -11,4 +11,9 @@ interface ElderApiService {
     suspend fun signupElder(
         @Body request: ElderSignupRequest
     ): Response<Any>
+
+    @POST("api/elder/login")
+    suspend fun loginElder(
+        @Body request:  Map<String, String>
+    ): Response<Map<String, String>>
 }

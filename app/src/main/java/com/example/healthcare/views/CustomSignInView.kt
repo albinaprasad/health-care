@@ -1,5 +1,6 @@
 package com.example.healthcare.views
 
+import android.R
 import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
@@ -13,7 +14,8 @@ class CustomSignInView @JvmOverloads constructor(
 ): ConstraintLayout(context,attrs,defStyleAttr) {
 
     private val binding : CustomSignInLayoutBinding
-    private var onLoginClick :(()-> Unit)? = null
+    private var onLoginClick: ((String, String) -> Unit)? = null
+
     private var onSignUPClick :(()-> Unit)? = null
 
 
@@ -22,14 +24,26 @@ class CustomSignInView @JvmOverloads constructor(
         binding = CustomSignInLayoutBinding.inflate(LayoutInflater.from(context), this, true)
 
         binding.loginBtn.setOnClickListener {
-            onLoginClick?.invoke()
+            val email = binding.emailInput.text.toString().trim()
+            val password = binding.passwordInput.text.toString().trim()
+
+            if(email.isEmpty()){
+                binding.emailInput.error = "Email required"
+                return@setOnClickListener
+            }
+
+            if (password.isEmpty()){
+                binding.passwordInput.error = "password required"
+                return@setOnClickListener
+            }
+            onLoginClick?.invoke(email,password)
         }
         binding.signUpText.setOnClickListener {
             onSignUPClick?.invoke()
         }
     }
 
-    fun setLoginButtonClick(listener: ()-> Unit){
+    fun setLoginButtonClick(listener: (String, String) -> Unit){
         onLoginClick = listener
 
     }

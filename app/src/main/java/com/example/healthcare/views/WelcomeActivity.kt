@@ -8,6 +8,7 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
@@ -17,16 +18,20 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.example.healthcare.TokenManager.PrefManager
+import com.example.healthcare.TokenManager.UserPreferenceSaving
+import com.example.healthcare.api.RetrofitClient
 import com.example.healthcare.databinding.ActivityWelcomeBinding
 import com.example.healthcare.services.LocationService
 import com.example.healthcare.viewModels.WelcomeScreenViewModel
 import com.example.healthcare.views.mainScreen.MainScreenActivity
 import com.example.healthcare.views.signUp.SignUpActivity
+import com.example.healthcare.views.urlConfig.UrlConfigActivity
 import kotlinx.coroutines.launch
 
 class WelcomeActivity : AppCompatActivity() {
     companion object {
-        private const val TAG = "WelcomeActivity"
+
         private const val PERMISSION_FINE_LOCATION = 1
         private const val PERMISSION_BACKGROUND_LOCATION = 2
 
@@ -36,6 +41,7 @@ class WelcomeActivity : AppCompatActivity() {
         }
     }
 
+    lateinit var userPreferenceObj: UserPreferenceSaving
     lateinit var binding: ActivityWelcomeBinding
     private val viewmodel: WelcomeScreenViewModel by viewModels()
 
@@ -47,7 +53,8 @@ class WelcomeActivity : AppCompatActivity() {
         binding = ActivityWelcomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        checkPermission()
+        userPreferenceObj = PrefManager.get(this)
+        RetrofitClient.init(this)
         setUplisteners()
         observeViewModels()
     }
@@ -131,14 +138,60 @@ class WelcomeActivity : AppCompatActivity() {
                 viewmodel.onContinueButtonClicked()
             }
 
-            SignInView.setLoginButtonClick {
-                MainScreenActivity.startActivity(this@WelcomeActivity)
+            btnSettings.setOnClickListener {
+                UrlConfigActivity.startActivity(this@WelcomeActivity)
+            }
+
+            SignInView.setLoginButtonClick { email, password ->
+                loginUser(email, password)
             }
 
             SignInView.signUpClick {
                 SignUpActivity.startActivity(this@WelcomeActivity)
             }
         }
+    }
+
+    fun loginUser(email: String, password: String) {
+        lifecycleScope.launch {
+            try {
+                val requestBody = mapOf(
+                    "ElderMail" to email,
+                    "Password" to password)
+                val response = RetrofitClient.loginApi.loginElder(requestBody)
+
+                if (response.isSuccessful) {
+
+                    val token = response.body()?.get("token")
+
+                    if (token != null) {
+                        saveToken(token)
+                        MainScreenActivity.startActivity(this@WelcomeActivity)
+                    }
+
+                } else {
+                    Toast.makeText(this@WelcomeActivity,
+                        "Login failed",
+                        Toast.LENGTH_SHORT).show()
+                }
+
+            } catch (e: Exception) {
+                Toast.makeText(this@WelcomeActivity,
+                    "Error: ${e.message}",
+                    Toast.LENGTH_SHORT).show()
+            }
+
+        }
+
+    }
+
+    private  fun saveToken(token: String) {
+        lifecycleScope.launch {
+            userPreferenceObj.saveToken(token)
+            Log.i("abc", "saveToken: $token")
+            checkPermission()
+        }
+
     }
 
     private fun observeViewModels(){
@@ -162,29 +215,30 @@ class WelcomeActivity : AppCompatActivity() {
             welcomeDescription.alpha = 1f
             btnContinue.alpha = 1f
 
-            imageView.animate()
-                .translationY(-500f)
-                .setDuration(900)
+            // Fade away the dot animation
+            dotAnimationView.animate()
+                .alpha(0f)
+                .setDuration(1500)
                 .start()
 
             SignInView.animate()
                 .alpha(1f)
-                .setDuration(900)
+                .setDuration(1500)
                 .start()
 
             welcomeText.animate()
                 .alpha(0f)
-                .setDuration(900)
+                .setDuration(1500)
                 .start()
 
             welcomeDescription.animate()
                 .alpha(0f)
-                .setDuration(900)
+                .setDuration(1500)
                 .start()
 
             btnContinue.animate()
                 .alpha(0f)
-                .setDuration(900)
+                .setDuration(1500)
                 .withEndAction {
                     welcomeText.visibility = View.GONE
                     welcomeDescription.visibility = View.GONE

@@ -50,6 +50,9 @@ class SignUpActivity : AppCompatActivity() {
             signInBtn.setOnClickListener {
                 finish()
             }
+            btnBack.setOnClickListener {
+                finish()
+            }
         }
     }
 
@@ -90,7 +93,7 @@ class SignUpActivity : AppCompatActivity() {
             )
 
             callSignUpApi(request)
-            finish()
+            //finish()
 
         }
     }
@@ -109,7 +112,7 @@ class SignUpActivity : AppCompatActivity() {
 
                     // Optional: navigate to main screen
                     // startActivity(Intent(this@SignUpActivity, MainScreenActivity::class.java))
-                    // finish()
+                     finish()
 
                 } else {
 
