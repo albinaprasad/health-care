@@ -19,7 +19,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.example.healthcare.TokenManager.PrefManager
-import com.example.healthcare.TokenManager.UrlPreferences
 import com.example.healthcare.TokenManager.UserPreferenceSaving
 import com.example.healthcare.api.RetrofitClient
 import com.example.healthcare.databinding.ActivityWelcomeBinding
@@ -58,10 +57,6 @@ class WelcomeActivity : AppCompatActivity() {
         RetrofitClient.init(this)
         setUplisteners()
         observeViewModels()
-        lifecycleScope.launch {
-            UrlPreferences(applicationContext).resetToDefaults()
-        }
-
     }
 
     private fun checkPermission() {
