@@ -16,7 +16,7 @@ class UrlPreferences(private val context: Context) {
         private val API_BASE_URL_KEY = stringPreferencesKey("api_base_url")
         private val WEBSOCKET_URL_KEY = stringPreferencesKey("websocket_url")
 
-        const val DEFAULT_API_URL = "https://disproportionable-unantagonistic-alvin.ngrok-free.dev"
+        const val DEFAULT_API_URL = "https://disproportionable-unantagonistic-alvin.ngrok-free.dev/"
         const val DEFAULT_WS_URL = "wss://yourself-keen-pine-inner.trycloudflare.com/ws?token="
     }
 

@@ -161,17 +161,30 @@ class WelcomeActivity : AppCompatActivity() {
                 val response = RetrofitClient.loginApi.loginElder(requestBody)
 
                 if (response.isSuccessful) {
+                    val body = response.body()
 
-                    val token = response.body()?.get("token")
+                    // Gson deserialises JSON strings as String and numbers as Double
+                    val token    = body?.get("token") as? String
+                    // elderId comes back as a JSON number → Gson gives us Double
+                    val elderIdRaw = body?.get("elderId")
+                    val elderId  = when (elderIdRaw) {
+                        is Double -> elderIdRaw.toInt()
+                        is Int    -> elderIdRaw
+                        is String -> elderIdRaw.toIntOrNull() ?: -1
+                        else      -> -1
+                    }
+
+                    Log.d("Login", "token=$token  elderId=$elderId  raw=$elderIdRaw")
 
                     if (token != null) {
                         saveToken(token)
+                        userPreferenceObj.saveElderId(elderId)
                         MainScreenActivity.startActivity(this@WelcomeActivity)
                     }
 
                 } else {
                     Toast.makeText(this@WelcomeActivity,
-                        "Login failed",
+                        "Login failed (${response.code()})",
                         Toast.LENGTH_SHORT).show()
                 }
 
@@ -180,9 +193,7 @@ class WelcomeActivity : AppCompatActivity() {
                     "Error: ${e.message}",
                     Toast.LENGTH_SHORT).show()
             }
-
         }
-
     }
 
     private  fun saveToken(token: String) {

@@ -14,7 +14,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 object RetrofitClient {
 
     private const val DEFAULT_BASE_URL =
-        "https://disproportionable-unantagonistic-alvin.ngrok-free.dev"
+        "https://disproportionable-unantagonistic-alvin.ngrok-free.dev/"
 
     private var BASE_URL: String = DEFAULT_BASE_URL
 

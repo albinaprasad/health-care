@@ -2,9 +2,11 @@ package com.example.healthcare.TokenManager
 
 import android.content.Context
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 
@@ -18,8 +20,8 @@ class UserPreferenceSaving(val context: Context) {
 
 
     companion object {
-        private val TOKEN_KEY = stringPreferencesKey("auth_token")
-
+        private val TOKEN_KEY   = stringPreferencesKey("auth_token")
+        private val ELDER_ID_KEY = intPreferencesKey("elder_id")
     }
 
     suspend fun saveToken(token: String) {
@@ -34,11 +36,20 @@ class UserPreferenceSaving(val context: Context) {
         }
     }
 
-    suspend fun clearToken() {
+    suspend fun saveElderId(id: Int) {
         context.dataStore.edit { preferences ->
-            preferences.remove(TOKEN_KEY)
+            preferences[ELDER_ID_KEY] = id
         }
     }
 
+    suspend fun getElderIdOnce(): Int {
+        return context.dataStore.data.map { it[ELDER_ID_KEY] ?: -1 }.first()
+    }
 
+    suspend fun clearToken() {
+        context.dataStore.edit { preferences ->
+            preferences.remove(TOKEN_KEY)
+            preferences.remove(ELDER_ID_KEY)
+        }
+    }
 }

@@ -19,6 +19,7 @@ import com.example.healthcare.adapters.WelcomeScreenAdapter
 import com.example.healthcare.databinding.ActivityMainScreenBinding
 import com.example.healthcare.dataclasses.GridItem
 import com.example.healthcare.dataclasses.calenderDay
+import com.example.healthcare.views.alarmScreen.AlarmActivity
 import com.example.healthcare.views.signUp.SignUpActivity
 import java.time.LocalDate
 import java.time.YearMonth
@@ -64,8 +65,13 @@ class MainScreenActivity : AppCompatActivity() {
             GridItem(R.drawable.ic_password, "Prescription")
         )
 
-        binding.recyclerView.layoutManager= GridLayoutManager(this@MainScreenActivity,2)
-        binding.recyclerView.adapter = WelcomeScreenAdapter(items)
+        binding.recyclerView.layoutManager = GridLayoutManager(this@MainScreenActivity, 2)
+        binding.recyclerView.adapter = WelcomeScreenAdapter(items) { item ->
+            when (item.title) {
+                "Prescription" -> AlarmActivity.startActivity(this@MainScreenActivity)
+                else -> { /* other items - handle as needed */ }
+            }
+        }
     }
 
 
@@ -87,7 +93,7 @@ class MainScreenActivity : AppCompatActivity() {
                     }
 
                     R.id.nav_prescription -> {
-                        Toast.makeText(this@MainScreenActivity, "Prescription clicked", Toast.LENGTH_SHORT).show()
+                        AlarmActivity.startActivity(this@MainScreenActivity)
                     }
                 }
                 drawerLayout.closeDrawer(GravityCompat.START)
