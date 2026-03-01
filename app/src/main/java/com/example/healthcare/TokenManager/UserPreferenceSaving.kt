@@ -22,6 +22,7 @@ class UserPreferenceSaving(val context: Context) {
     companion object {
         private val TOKEN_KEY   = stringPreferencesKey("auth_token")
         private val ELDER_ID_KEY = intPreferencesKey("elder_id")
+        private val PRESCRIPTION_HASH_KEY = stringPreferencesKey("prescription_hash")
     }
 
     suspend fun saveToken(token: String) {
@@ -44,6 +45,16 @@ class UserPreferenceSaving(val context: Context) {
 
     suspend fun getElderIdOnce(): Int {
         return context.dataStore.data.map { it[ELDER_ID_KEY] ?: -1 }.first()
+    }
+
+    suspend fun savePrescriptionHash(hash: String) {
+        context.dataStore.edit { preferences ->
+            preferences[PRESCRIPTION_HASH_KEY] = hash
+        }
+    }
+
+    suspend fun getPrescriptionHashOnce(): String {
+        return context.dataStore.data.map { it[PRESCRIPTION_HASH_KEY] ?: "" }.first()
     }
 
     suspend fun clearToken() {

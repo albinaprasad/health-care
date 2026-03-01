@@ -100,9 +100,6 @@ class MainScreenActivity : AppCompatActivity() {
                 true
             }
 
-            dateTV.setOnClickListener {
-                SignUpActivity.startActivity(this@MainScreenActivity)
-            }
         }
         binding.main.setOnClickListener {
             if(binding.drawerLayout.isDrawerOpen(GravityCompat.START)){

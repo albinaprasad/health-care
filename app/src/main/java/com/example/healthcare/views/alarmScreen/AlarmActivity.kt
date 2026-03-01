@@ -96,6 +96,7 @@ class AlarmActivity : AppCompatActivity() {
 
                 if (response.isSuccessful) {
                     val prescriptions = response.body() ?: emptyList()
+                    updateSummaryCard(prescriptions)
                     if (prescriptions.isEmpty()) {
                         showEmpty(true)
                     } else {
@@ -122,6 +123,11 @@ class AlarmActivity : AppCompatActivity() {
         binding.rvPrescriptions.layoutManager = LinearLayoutManager(this)
         binding.rvPrescriptions.adapter       = PrescriptionAdapter(items)
         binding.rvPrescriptions.visibility    = View.VISIBLE
+    }
+
+    private fun updateSummaryCard(prescriptions: List<PrescriptionResponse>) {
+        binding.tvTotalCount.text  = prescriptions.size.toString()
+        binding.tvActiveCount.text = prescriptions.count { it.isActive }.toString()
     }
 
     // ─── Alarm scheduling ────────────────────────────────────────────────────

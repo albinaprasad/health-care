@@ -1,8 +1,11 @@
 package com.example.healthcare.adapters
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
+import com.example.healthcare.R
 import com.example.healthcare.dataclasses.PrescriptionResponse
 import com.example.healthcare.databinding.ItemPrescriptionBinding
 
@@ -28,17 +31,41 @@ class PrescriptionAdapter(
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: PrescriptionResponse) {
-            binding.tvMedicineName.text = item.medicineName
-            binding.tvDosage.text      = "Dosage: ${item.dosage}"
-            binding.tvFrequency.text   = item.frequency
-            binding.tvNotes.text       = item.notes?.takeIf { it.isNotBlank() } ?: "No notes"
+            val ctx = binding.root.context
 
-            // Format date: take the date portion before 'T' if ISO format
+            // Medicine name
+            binding.tvMedicineName.text = item.medicineName
+
+            // Prescription date subtitle
             val dateDisplay = item.prescriptionDate.substringBefore("T")
+            binding.tvPrescribedBy.text = "Prescribed on $dateDisplay"
             binding.tvDate.text = dateDisplay
 
-            // Dim inactive prescriptions
-            binding.root.alpha = if (item.isActive) 1f else 0.5f
+            // Dosage & frequency
+            binding.tvDosage.text    = item.dosage
+            binding.tvFrequency.text = item.frequency
+
+            // Notes — hide entire row if empty
+            val notes = item.notes?.takeIf { it.isNotBlank() }
+            if (notes != null) {
+                binding.layoutNotes.visibility = View.VISIBLE
+                binding.tvNotes.text = notes
+            } else {
+                binding.layoutNotes.visibility = View.GONE
+            }
+
+            // Status badge
+            if (item.isActive) {
+                binding.tvStatusBadge.text = "Active"
+                binding.tvStatusBadge.setTextColor(ContextCompat.getColor(ctx, R.color.primary_blue))
+                binding.tvStatusBadge.setBackgroundResource(R.drawable.bg_badge_active)
+                binding.root.alpha = 1f
+            } else {
+                binding.tvStatusBadge.text = "Inactive"
+                binding.tvStatusBadge.setTextColor(ContextCompat.getColor(ctx, R.color.button_snooze_color))
+                binding.tvStatusBadge.setBackgroundResource(R.drawable.bg_badge_inactive)
+                binding.root.alpha = 0.7f
+            }
         }
     }
 }
