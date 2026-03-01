@@ -14,7 +14,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 object RetrofitClient {
 
     private const val DEFAULT_BASE_URL =
-        "https://disproportionable-unantagonistic-alvin.ngrok-free.dev"
+        "https://disproportionable-unantagonistic-alvin.ngrok-free.app/" // ✅ .app + trailing slash
 
     private var BASE_URL: String = DEFAULT_BASE_URL
 
@@ -42,9 +42,20 @@ object RetrofitClient {
 
     fun init(context: Context) {
         val urlPreferences = UrlPreferences(context.applicationContext)
-        val savedUrl = runBlocking { urlPreferences.getApiUrlOnce() }
-        if (savedUrl.isNotBlank() && savedUrl != BASE_URL) {
-            BASE_URL = savedUrl
+        val savedUrl = runBlocking { urlPreferences.getApiUrlOnce() }.trim()
+
+        // ✅ Validate before using — reset to default if corrupted
+        if (savedUrl.isBlank() || !savedUrl.startsWith("http")) {
+            runBlocking { urlPreferences.saveUrls(DEFAULT_BASE_URL, UrlPreferences.DEFAULT_WS_URL) }
+            BASE_URL = DEFAULT_BASE_URL
+            retrofit = buildRetrofit()
+            return
+        }
+
+        // ✅ Only update if different from current
+        val validUrl = if (savedUrl.endsWith("/")) savedUrl else "$savedUrl/"
+        if (validUrl != BASE_URL) {
+            BASE_URL = validUrl
             retrofit = buildRetrofit()
         }
     }
