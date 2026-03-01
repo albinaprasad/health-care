@@ -7,24 +7,92 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.example.healthcare.R
 import com.example.healthcare.dataclasses.PrescriptionResponse
+import com.example.healthcare.databinding.ItemDateHeaderBinding
 import com.example.healthcare.databinding.ItemPrescriptionBinding
+import java.text.SimpleDateFormat
+import java.util.Locale
+
+/**
+ * Sealed class representing either a date‑header or a prescription card.
+ */
+sealed class PrescriptionListItem {
+    data class Header(val dateLabel: String) : PrescriptionListItem()
+    data class Item(val prescription: PrescriptionResponse) : PrescriptionListItem()
+}
 
 class PrescriptionAdapter(
-    private val list: List<PrescriptionResponse>
-) : RecyclerView.Adapter<PrescriptionAdapter.PrescriptionViewHolder>() {
+    prescriptions: List<PrescriptionResponse>
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PrescriptionViewHolder {
-        val binding = ItemPrescriptionBinding.inflate(
-            LayoutInflater.from(parent.context), parent, false
-        )
-        return PrescriptionViewHolder(binding)
+    companion object {
+        private const val TYPE_HEADER = 0
+        private const val TYPE_ITEM   = 1
+
+        /** ISO → readable format, e.g. "01 Mar 2026" */
+        private val isoFormat     = SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH)
+        private val displayFormat = SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH)
+
+        fun formatDate(iso: String): String {
+            return try {
+                val date = isoFormat.parse(iso.substringBefore("T"))
+                if (date != null) displayFormat.format(date) else iso
+            } catch (_: Exception) { iso }
+        }
     }
 
-    override fun onBindViewHolder(holder: PrescriptionViewHolder, position: Int) {
-        holder.bind(list[position])
+    /** Flat list of headers + items, built from the raw prescriptions. */
+    private val items: List<PrescriptionListItem>
+
+    init {
+        // Group by date (take portion before 'T'), sort newest first
+        val grouped = prescriptions
+            .groupBy { it.prescriptionDate.substringBefore("T") }
+            .toSortedMap(compareByDescending { it })
+
+        val result = mutableListOf<PrescriptionListItem>()
+        for ((dateKey, meds) in grouped) {
+            result.add(PrescriptionListItem.Header(formatDate(dateKey)))
+            meds.sortedBy { it.medicineName }.forEach { med ->
+                result.add(PrescriptionListItem.Item(med))
+            }
+        }
+        items = result
     }
 
-    override fun getItemCount() = list.size
+    // ─── View‑type routing ──────────────────────────────────────────────────
+
+    override fun getItemViewType(position: Int) = when (items[position]) {
+        is PrescriptionListItem.Header -> TYPE_HEADER
+        is PrescriptionListItem.Item   -> TYPE_ITEM
+    }
+
+    override fun getItemCount() = items.size
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        val inflater = LayoutInflater.from(parent.context)
+        return if (viewType == TYPE_HEADER) {
+            DateHeaderViewHolder(ItemDateHeaderBinding.inflate(inflater, parent, false))
+        } else {
+            PrescriptionViewHolder(ItemPrescriptionBinding.inflate(inflater, parent, false))
+        }
+    }
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        when (val entry = items[position]) {
+            is PrescriptionListItem.Header -> (holder as DateHeaderViewHolder).bind(entry)
+            is PrescriptionListItem.Item   -> (holder as PrescriptionViewHolder).bind(entry.prescription)
+        }
+    }
+
+    // ─── ViewHolders ────────────────────────────────────────────────────────
+
+    inner class DateHeaderViewHolder(
+        private val binding: ItemDateHeaderBinding
+    ) : RecyclerView.ViewHolder(binding.root) {
+        fun bind(header: PrescriptionListItem.Header) {
+            binding.tvDateHeader.text = header.dateLabel
+        }
+    }
 
     inner class PrescriptionViewHolder(
         private val binding: ItemPrescriptionBinding
@@ -37,7 +105,7 @@ class PrescriptionAdapter(
             binding.tvMedicineName.text = item.medicineName
 
             // Prescription date subtitle
-            val dateDisplay = item.prescriptionDate.substringBefore("T")
+            val dateDisplay = formatDate(item.prescriptionDate.substringBefore("T"))
             binding.tvPrescribedBy.text = "Prescribed on $dateDisplay"
             binding.tvDate.text = dateDisplay
 
