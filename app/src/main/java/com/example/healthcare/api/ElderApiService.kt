@@ -1,6 +1,9 @@
 package com.example.healthcare.api
 
 import com.example.healthcare.dataclasses.ElderSignupRequest
+import com.example.healthcare.dataclasses.FallAlertResponse
+import com.example.healthcare.dataclasses.FallAlertResult
+import com.example.healthcare.dataclasses.FcmTokenRequest
 import com.example.healthcare.dataclasses.PrescriptionResponse
 import retrofit2.Response
 import retrofit2.http.Body
@@ -26,4 +29,14 @@ interface ElderApiService {
         @Header("Authorization") token: String,
         @Path("elderId") elderId: Int
     ): Response<List<PrescriptionResponse>>
+
+    @POST("api/elder/fcm-token")
+    suspend fun registerFcmToken(
+        @Body request: FcmTokenRequest
+    ): Response<Any>
+
+    @POST("api/elder/respond")
+    suspend fun sendFallResponse(
+        @Body request: FallAlertResponse
+    ): Response<FallAlertResult>
 }

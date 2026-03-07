@@ -22,12 +22,15 @@ import com.example.healthcare.TokenManager.PrefManager
 import com.example.healthcare.TokenManager.UserPreferenceSaving
 import com.example.healthcare.api.RetrofitClient
 import com.example.healthcare.databinding.ActivityWelcomeBinding
+import com.example.healthcare.dataclasses.FcmTokenRequest
 import com.example.healthcare.services.LocationService
 import com.example.healthcare.viewModels.WelcomeScreenViewModel
 import com.example.healthcare.views.mainScreen.MainScreenActivity
 import com.example.healthcare.views.signUp.SignUpActivity
 import com.example.healthcare.views.urlConfig.UrlConfigActivity
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class WelcomeActivity : AppCompatActivity() {
     companion object {
@@ -53,10 +56,40 @@ class WelcomeActivity : AppCompatActivity() {
         binding = ActivityWelcomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // Intercept FCM notification clicks
+        val type = intent.getStringExtra("type")
+        val alertId = intent.getStringExtra("alertId") ?: intent.getStringExtra("alert_id") ?: "unknown"
+        val isFallAlert = type == "fall_alert" || intent.extras?.keySet()?.any { 
+            intent.getStringExtra(it)?.contains("fall", ignoreCase = true) == true 
+        } == true
+
+        if (isFallAlert) {
+            Log.d("WelcomeActivity", "Fall alert notification clicked, redirecting...")
+            val alertIntent = Intent(this, com.example.healthcare.views.fallAlert.FallAlertActivity::class.java).apply {
+                putExtra(com.example.healthcare.views.fallAlert.FallAlertActivity.EXTRA_ALERT_ID, alertId)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            }
+            startActivity(alertIntent)
+            finish()
+            return
+        }
+
         userPreferenceObj = PrefManager.get(this)
         RetrofitClient.init(this)
-        setUplisteners()
-        observeViewModels()
+
+        lifecycleScope.launch {
+            val elderId = userPreferenceObj.getElderIdOnce()
+            if (elderId != -1) {
+                // User is already logged in, navigate straight to main screen
+                android.util.Log.d("WelcomeActivity", "User already logged in with elderId=$elderId, auto-login.")
+                MainScreenActivity.startActivity(this@WelcomeActivity)
+                finish()
+            } else {
+                // Show welcome/login screen
+                setUplisteners()
+                observeViewModels()
+            }
+        }
     }
 
     private fun checkPermission() {
@@ -155,9 +188,19 @@ class WelcomeActivity : AppCompatActivity() {
     fun loginUser(email: String, password: String) {
         lifecycleScope.launch {
             try {
+                // Get FCM token first
+                val fcmToken = try {
+                    FirebaseMessaging.getInstance().token.await()
+                } catch (e: Exception) {
+                    Log.e("Login", "Failed to get FCM token", e)
+                    ""
+                }
+
                 val requestBody = mapOf(
-                    "ElderMail" to email,
-                    "Password" to password)
+                    "elderMail" to email,
+                    "password" to password,
+                    "FCMToken" to fcmToken
+                )
                 val response = RetrofitClient.loginApi.loginElder(requestBody)
 
                 if (response.isSuccessful) {
@@ -179,6 +222,7 @@ class WelcomeActivity : AppCompatActivity() {
                     if (token != null) {
                         saveToken(token)
                         userPreferenceObj.saveElderId(elderId)
+                        userPreferenceObj.saveFcmToken(fcmToken)
                         MainScreenActivity.startActivity(this@WelcomeActivity)
                     }
 
@@ -203,6 +247,26 @@ class WelcomeActivity : AppCompatActivity() {
             checkPermission()
         }
 
+    }
+
+    private fun registerFcmToken(elderId: Int) {
+        lifecycleScope.launch {
+            try {
+                val fcmToken = FirebaseMessaging.getInstance().token.await()
+                Log.d("Login", "FCM token: $fcmToken")
+
+                // Save locally
+                userPreferenceObj.saveFcmToken(fcmToken)
+
+                // Send to server
+                val response = RetrofitClient.loginApi.registerFcmToken(
+                    FcmTokenRequest(elderId = elderId, fcmToken = fcmToken)
+                )
+                Log.d("Login", "FCM token registered: ${response.isSuccessful}")
+            } catch (e: Exception) {
+                Log.e("Login", "Failed to register FCM token", e)
+            }
+        }
     }
 
     private fun observeViewModels(){

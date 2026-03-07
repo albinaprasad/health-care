@@ -23,6 +23,7 @@ class UserPreferenceSaving(val context: Context) {
         private val TOKEN_KEY   = stringPreferencesKey("auth_token")
         private val ELDER_ID_KEY = intPreferencesKey("elder_id")
         private val PRESCRIPTION_HASH_KEY = stringPreferencesKey("prescription_hash")
+        private val FCM_TOKEN_KEY = stringPreferencesKey("fcm_token")
     }
 
     suspend fun saveToken(token: String) {
@@ -62,5 +63,15 @@ class UserPreferenceSaving(val context: Context) {
             preferences.remove(TOKEN_KEY)
             preferences.remove(ELDER_ID_KEY)
         }
+    }
+
+    suspend fun saveFcmToken(token: String) {
+        context.dataStore.edit { preferences ->
+            preferences[FCM_TOKEN_KEY] = token
+        }
+    }
+
+    suspend fun getFcmTokenOnce(): String {
+        return context.dataStore.data.map { it[FCM_TOKEN_KEY] ?: "" }.first()
     }
 }

@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Animated Background (same as other screens) -->
+    <com.example.healthcare.views.components.LiquidBackgroundView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <!-- White overlay for readability -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/white_overlay"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <!-- Alert Card -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="24dp"
+        android:background="@drawable/bg_glass_card"
+        android:padding="32dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <!-- Alert Icon -->
+        <ImageView
+            android:id="@+id/ivWarning"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:contentDescription="Fall Alert"
+            android:src="@drawable/pulse_alert_48dp_1f1f1f_fill0_wght400_grad0_opsz48"
+            app:tint="#E53935"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Red accent underline -->
+        <View
+            android:id="@+id/alertUnderline"
+            android:layout_width="48dp"
+            android:layout_height="3dp"
+            android:layout_marginTop="12dp"
+            android:background="#E53935"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/ivWarning" />
+
+        <!-- Title -->
+        <TextView
+            android:id="@+id/tvAlertTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:fontFamily="@font/poppins_bold"
+            android:text="Fall Detected!"
+            android:textColor="@color/text_primary"
+            android:textSize="26sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/alertUnderline" />
+
+        <!-- Message -->
+        <TextView
+            android:id="@+id/tvAlertMessage"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:fontFamily="@font/poppins"
+            android:gravity="center"
+            android:text="A fall has been detected.\nAre you okay?"
+            android:textColor="@color/text_secondary"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvAlertTitle" />
+
+        <!-- I'm Okay Button (primary blue — matches app style) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnImOkay"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_marginTop="32dp"
+            android:backgroundTint="@color/primary_blue"
+            android:fontFamily="@font/poppins_semibold"
+            android:text="I'm Okay"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            app:cornerRadius="16dp"
+            app:elevation="4dp"
+            app:icon="@android:drawable/ic_input_add"
+            app:iconGravity="textStart"
+            app:iconTint="@color/white"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvAlertMessage" />
+
+        <!-- I Need Help Button (red — urgent action) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnNeedHelp"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_marginTop="12dp"
+            android:fontFamily="@font/poppins_semibold"
+            android:text="I Need Help"
+            android:textAllCaps="false"
+            android:textColor="#E53935"
+            android:textSize="16sp"
+            app:cornerRadius="16dp"
+            app:strokeColor="#E53935"
+            app:strokeWidth="2dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btnImOkay" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

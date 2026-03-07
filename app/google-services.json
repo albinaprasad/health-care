@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "89052524461",
-    "project_id": "healthcare-5dc0f",
-    "storage_bucket": "healthcare-5dc0f.firebasestorage.app"
+    "project_number": "725293582202",
+    "project_id": "wellnest-e0665",
+    "storage_bucket": "wellnest-e0665.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:89052524461:android:8f561db189cbc28d66bb24",
+        "mobilesdk_app_id": "1:725293582202:android:d524ac270af8df187ff8c3",
         "android_client_info": {
           "package_name": "com.example.healthcare"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBXibeYgEaD09sm8KotAKZchtypPcalUX4"
+          "current_key": "AIzaSyDdP0i72dWZRzTvIjWdxP7fIwpBPWUjPLs"
         }
       ],
       "services": {

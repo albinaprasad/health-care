@@ -25,6 +25,8 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.TextStyle
 import java.util.Locale
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 
 class MainScreenActivity : AppCompatActivity() {
 
@@ -39,6 +41,25 @@ class MainScreenActivity : AppCompatActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Intercept FCM notification clicks
+        val type = intent.getStringExtra("type")
+        val alertId = intent.getStringExtra("alertId") ?: intent.getStringExtra("alert_id") ?: "unknown"
+        val isFallAlert = type == "fall_alert" || intent.extras?.keySet()?.any { 
+            intent.getStringExtra(it)?.contains("fall", ignoreCase = true) == true 
+        } == true
+
+        if (isFallAlert) {
+            android.util.Log.d("MainScreen", "Fall alert notification clicked, redirecting...")
+            val alertIntent = Intent(this, com.example.healthcare.views.fallAlert.FallAlertActivity::class.java).apply {
+                putExtra(com.example.healthcare.views.fallAlert.FallAlertActivity.EXTRA_ALERT_ID, alertId)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            }
+            startActivity(alertIntent)
+            finish()
+            return
+        }
+
         enableEdgeToEdge()
         binding = ActivityMainScreenBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -94,6 +115,16 @@ class MainScreenActivity : AppCompatActivity() {
 
                     R.id.nav_prescription -> {
                         AlarmActivity.startActivity(this@MainScreenActivity)
+                    }
+
+                    R.id.nav_logout -> {
+                        lifecycleScope.launch {
+                            com.example.healthcare.TokenManager.PrefManager.get(this@MainScreenActivity).clearToken()
+                            val intent = Intent(this@MainScreenActivity, com.example.healthcare.views.WelcomeActivity::class.java)
+                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            startActivity(intent)
+                            finish()
+                        }
                     }
                 }
                 drawerLayout.closeDrawer(GravityCompat.START)

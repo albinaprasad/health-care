@@ -65,6 +65,7 @@
             app:boxCornerRadiusBottomStart="14dp"
             app:boxCornerRadiusBottomEnd="14dp"
             app:boxStrokeColor="@color/primary_blue"
+            android:textColorHint="@color/black"
             app:hintTextColor="@color/primary_blue"
             app:startIconDrawable="@drawable/ic_email"
             app:startIconTint="@color/primary_blue"
@@ -81,6 +82,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textSize="15sp"
+                android:textColor="@color/black"
                 android:inputType="textEmailAddress" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -96,6 +98,7 @@
             app:boxCornerRadiusBottomStart="14dp"
             app:boxCornerRadiusBottomEnd="14dp"
             app:boxStrokeColor="@color/primary_blue"
+            android:textColorHint="@color/black"
             app:hintTextColor="@color/primary_blue"
             app:startIconDrawable="@drawable/ic_password"
             app:startIconTint="@color/primary_blue"
@@ -112,6 +115,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textSize="15sp"
+                android:textColor="@color/black"
                 android:inputType="textPassword" />
         </com.google.android.material.textfield.TextInputLayout>
 

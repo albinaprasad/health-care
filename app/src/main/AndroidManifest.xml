@@ -11,6 +11,8 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
 
     <application
         android:name=".HealthCareApplication"
@@ -44,6 +46,15 @@
             </intent-filter>
         </activity>
 
+        <!-- Fall Alert Activity - shows over lock screen -->
+        <activity
+            android:name=".views.fallAlert.FallAlertActivity"
+            android:exported="false"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true"
+            android:excludeFromRecents="true"
+            android:theme="@style/Theme.apptheme" />
+
         <!-- Prescription reminder receiver -->
         <receiver
             android:name=".views.alarmScreen.PrescriptionReminderReceiver"
@@ -58,6 +69,15 @@
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="location" />
+
+        <!-- Firebase Cloud Messaging Service -->
+        <service
+            android:name=".services.FcmService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>
