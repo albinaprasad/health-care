@@ -90,8 +90,9 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="@string/welcome"
-        android:textSize="32dp"
-        android:textStyle="bold|italic"
+        android:fontFamily="@font/pacifico"
+        android:textSize="32sp"
+        android:textColor="@color/primary_blue"
         android:layout_marginStart="24dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/gL">
@@ -101,26 +102,25 @@
         android:id="@+id/welcomeDescription"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:textSize="26dp"
-        android:textStyle="italic"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="20dp"
+        android:text="Glad to see you again!"
+        android:textSize="18sp"
+        android:textColor="#555555"
+        android:layout_marginStart="28dp"
+        android:layout_marginTop="8dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/welcomeText"
-        android:text="Hi Welcome!!!">
+        app:layout_constraintTop_toBottomOf="@+id/welcomeText">
 
     </TextView>
     <ImageView
         android:id="@+id/btnContinue"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-       android:src="@drawable/continue_btn"
+        android:src="@drawable/continue_btn"
         android:layout_marginStart="24dp"
         android:layout_marginTop="20dp"
-       app:layout_constraintTop_toTopOf="@id/gL2"
+        app:layout_constraintTop_toTopOf="@id/gL2"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginEnd="16dp"
-        android:text="Hi Welcome!!!">
+        android:layout_marginEnd="16dp">
 
     </ImageView>
 
