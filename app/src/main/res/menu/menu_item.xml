@@ -1,25 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-<group android:checkableBehavior="single">
 
-    <item android:id="@+id/nav_home"
-        android:title="HOME"
-        android:icon="@drawable/ic_home_unfilled"
-        />
+    <group android:checkableBehavior="single">
 
-    <item android:id="@+id/nav_prescription"
-        android:title="PRESCRIPTION"
-        android:icon="@drawable/ic_home_unfilled"
-        />
+        <item
+            android:id="@+id/nav_home"
+            android:title="Home"
+            android:icon="@drawable/ic_home_unfilled" />
 
-    <item android:id="@+id/item_one"
-        android:title="item one"
-        android:icon="@drawable/ic_home_unfilled"
-        />
+        <item
+            android:id="@+id/nav_prescription"
+            android:title="Prescriptions"
+            android:icon="@android:drawable/ic_menu_agenda" />
 
-    <item android:id="@+id/nav_logout"
-        android:title="LOGOUT"
-        android:icon="@android:drawable/ic_lock_power_off"
-        />
-</group>
+    </group>
+
+    <!-- Separated section for account actions -->
+    <item android:title="Account">
+        <menu>
+            <item
+                android:id="@+id/nav_logout"
+                android:title="Log Out"
+                android:icon="@android:drawable/ic_lock_power_off" />
+        </menu>
+    </item>
+
 </menu>

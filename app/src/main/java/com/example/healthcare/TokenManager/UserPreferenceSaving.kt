@@ -58,10 +58,21 @@ class UserPreferenceSaving(val context: Context) {
         return context.dataStore.data.map { it[PRESCRIPTION_HASH_KEY] ?: "" }.first()
     }
 
+    suspend fun saveElderName(name: String) {
+        context.dataStore.edit { preferences ->
+            preferences[stringPreferencesKey("elder_name")] = name
+        }
+    }
+
+    suspend fun getElderNameOnce(): String {
+        return context.dataStore.data.map { it[stringPreferencesKey("elder_name")] ?: "User Name" }.first()
+    }
+
     suspend fun clearToken() {
         context.dataStore.edit { preferences ->
             preferences.remove(TOKEN_KEY)
             preferences.remove(ELDER_ID_KEY)
+            preferences.remove(stringPreferencesKey("elder_name"))
         }
     }
 

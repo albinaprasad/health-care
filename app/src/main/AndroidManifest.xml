@@ -58,7 +58,7 @@
         <!-- Prescription reminder receiver -->
         <receiver
             android:name=".views.alarmScreen.PrescriptionReminderReceiver"
-            android:exported="false">
+            android:exported="true">
             <intent-filter>
                 <action android:name="com.example.healthcare.PRESCRIPTION_REMINDER" />
             </intent-filter>

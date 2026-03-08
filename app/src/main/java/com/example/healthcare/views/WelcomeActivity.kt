@@ -28,10 +28,9 @@ import com.example.healthcare.viewModels.WelcomeScreenViewModel
 import com.example.healthcare.views.mainScreen.MainScreenActivity
 import com.example.healthcare.views.signUp.SignUpActivity
 import com.example.healthcare.views.urlConfig.UrlConfigActivity
-import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-
+import com.google.firebase.messaging.FirebaseMessaging
 class WelcomeActivity : AppCompatActivity() {
     companion object {
 
@@ -216,12 +215,33 @@ class WelcomeActivity : AppCompatActivity() {
                         is String -> elderIdRaw.toIntOrNull() ?: -1
                         else      -> -1
                     }
+                    
+                    // Try to guess name from token
+                    var elderName = (body?.get("name") as? String) ?: (body?.get("elderName") as? String)
+                    if (elderName == null && token != null) {
+                        try {
+                            val parts = token.split(".")
+                            if (parts.size == 3) {
+                                val payload = String(android.util.Base64.decode(parts[1], android.util.Base64.URL_SAFE))
+                                // Very basic extraction: look for email address
+                                val emailMatch = "\"http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress\":\"([^\"]+)\"".toRegex().find(payload)
+                                if (emailMatch != null) {
+                                    elderName = emailMatch.groupValues[1].split("@").first().replaceFirstChar { it.uppercase() }
+                                }
+                            }
+                        } catch (e: Exception) {
+                            Log.e("Login", "Failed to parse JWT", e)
+                        }
+                    }
+                    
+                    val finalName = elderName ?: "User"
 
-                    Log.d("Login", "token=$token  elderId=$elderId  raw=$elderIdRaw")
+                    Log.d("Login", "token=$token  elderId=$elderId  elderName=$finalName  raw=$elderIdRaw")
 
                     if (token != null) {
                         saveToken(token)
                         userPreferenceObj.saveElderId(elderId)
+                        userPreferenceObj.saveElderName(finalName)
                         userPreferenceObj.saveFcmToken(fcmToken)
                         MainScreenActivity.startActivity(this@WelcomeActivity)
                     }

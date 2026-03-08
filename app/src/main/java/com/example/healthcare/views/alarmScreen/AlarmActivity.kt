@@ -238,19 +238,37 @@ class PrescriptionReminderReceiver : BroadcastReceiver() {
         val medicine = intent.getStringExtra("medicine") ?: "Medicine"
         val dosage   = intent.getStringExtra("dosage")   ?: ""
 
+        Log.d("PrescriptionReminder", "🔔 Receiver fired! medicine=$medicine dosage=$dosage")
+
         // Post a heads-up notification
         val notifManager = context.getSystemService(NotificationManager::class.java)
+
+        // Ensure channel exists (in case it hasn't been created yet)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val existing = notifManager.getNotificationChannel(AlarmActivity.CHANNEL_ID)
+            if (existing == null) {
+                val channel = NotificationChannel(
+                    AlarmActivity.CHANNEL_ID,
+                    "Prescription Reminders",
+                    NotificationManager.IMPORTANCE_HIGH
+                ).apply { description = "Alerts you when it is time to take your medicine" }
+                notifManager.createNotificationChannel(channel)
+                Log.d("PrescriptionReminder", "Created notification channel in receiver")
+            }
+        }
+
         val notification = NotificationCompat.Builder(context, AlarmActivity.CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
-            .setContentTitle("💊 Time to take your medicine!")
+            .setContentTitle("\uD83D\uDC8A Time to take your medicine!")
             .setContentText("$medicine — $dosage")
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
             .build()
         notifManager.notify(AlarmActivity.NOTIF_ID, notification)
+        Log.d("PrescriptionReminder", "Notification posted")
 
-        // Show a dialog if the app is in the foreground by launching AlarmActivity
-        val dialogIntent = Intent(context, AlarmActivity::class.java).apply {
+        // Show a dialog if the app is in the foreground by launching MainScreenActivity
+        val dialogIntent = Intent(context, com.example.healthcare.views.mainScreen.MainScreenActivity::class.java).apply {
             putExtra("show_reminder", true)
             putExtra("medicine", medicine)
             putExtra("dosage",   dosage)

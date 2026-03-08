@@ -1,34 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:orientation="vertical"
     android:background="@color/primary_blue"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:paddingTop="48dp"
+    android:paddingBottom="24dp"
+    android:paddingHorizontal="20dp"
+    android:gravity="start">
 
+    <!-- Profile picture -->
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/MenuUser_image"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:src="@drawable/ic_user_profile"
+        android:background="@android:color/white"
+        android:padding="12dp"
+        android:scaleType="centerCrop"
+        app:strokeWidth="3dp"
+        app:strokeColor="#80FFFFFF"
+        app:shapeAppearance="@style/CircleImageViewStyle" />
+
+    <!-- User name -->
+    <TextView
+        android:id="@+id/tvMenuUserName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        android:src="@drawable/ic_user_profile"
-        android:background="@color/white"
-        android:layout_margin="8dp"
-        app:strokeWidth="2dp"
-        android:padding="2dp"
-        app:strokeColor="@color/black"
-        app:shapeAppearance="@style/CircleImageViewStyle"
-        >
-    </com.google.android.material.imageview.ShapeableImageView>
+        android:text="Welcome"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/white"
+        android:layout_marginTop="16dp" />
 
+    <!-- Subtitle -->
     <TextView
-        android:layout_width="0dp"
+        android:id="@+id/tvMenuSubtitle"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="welcome"
-        android:textSize="16dp"
-        android:layout_margin="4dp"
-        android:textColor="@color/white"
-        app:layout_constraintTop_toBottomOf="@id/MenuUser_image"
-        app:layout_constraintStart_toStartOf="@id/MenuUser_image"
-        />
-</androidx.constraintlayout.widget.ConstraintLayout>
+        android:text="Health Care"
+        android:textSize="13sp"
+        android:textColor="#B3FFFFFF"
+        android:layout_marginTop="2dp" />
+
+</LinearLayout>
