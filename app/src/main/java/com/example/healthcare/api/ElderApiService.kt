@@ -5,6 +5,7 @@ import com.example.healthcare.dataclasses.FallAlertResponse
 import com.example.healthcare.dataclasses.FallAlertResult
 import com.example.healthcare.dataclasses.FcmTokenRequest
 import com.example.healthcare.dataclasses.PrescriptionResponse
+import com.example.healthcare.dataclasses.SetHomeRequest
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -39,4 +40,9 @@ interface ElderApiService {
     suspend fun sendFallResponse(
         @Body request: FallAlertResponse
     ): Response<FallAlertResult>
+
+    @POST("api/elder/set-home")
+    suspend fun setHome(
+        @Body request: SetHomeRequest
+    ): Response<Any>
 }

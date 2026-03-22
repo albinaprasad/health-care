@@ -23,11 +23,13 @@ import com.example.healthcare.TokenManager.UserPreferenceSaving
 import com.example.healthcare.api.RetrofitClient
 import com.example.healthcare.databinding.ActivityWelcomeBinding
 import com.example.healthcare.dataclasses.FcmTokenRequest
+import com.example.healthcare.dataclasses.SetHomeRequest
 import com.example.healthcare.services.LocationService
 import com.example.healthcare.viewModels.WelcomeScreenViewModel
 import com.example.healthcare.views.mainScreen.MainScreenActivity
 import com.example.healthcare.views.signUp.SignUpActivity
 import com.example.healthcare.views.urlConfig.UrlConfigActivity
+import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import com.google.firebase.messaging.FirebaseMessaging
@@ -36,6 +38,7 @@ class WelcomeActivity : AppCompatActivity() {
 
         private const val PERMISSION_FINE_LOCATION = 1
         private const val PERMISSION_BACKGROUND_LOCATION = 2
+        private const val PERMISSION_CAMERA = 3
 
         fun startActivity(context: Context) {
             val intent = Intent(context, WelcomeActivity::class.java)
@@ -127,12 +130,24 @@ class WelcomeActivity : AppCompatActivity() {
             }
         }
 
-        // Step 3: Start service
+        // Step 3: Check CAMERA permission
+        val cameraGranted = ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (!cameraGranted) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.CAMERA),
+                PERMISSION_CAMERA
+            )
+            return
+        }
+
+        // Step 4: Start service
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-
             startLocationService()
-        } else {
-
         }
     }
 
@@ -243,6 +258,10 @@ class WelcomeActivity : AppCompatActivity() {
                         userPreferenceObj.saveElderId(elderId)
                         userPreferenceObj.saveElderName(finalName)
                         userPreferenceObj.saveFcmToken(fcmToken)
+
+                        // Send set-home with current location
+                        sendSetHome(elderId)
+
                         MainScreenActivity.startActivity(this@WelcomeActivity)
                     }
 
@@ -267,6 +286,31 @@ class WelcomeActivity : AppCompatActivity() {
             checkPermission()
         }
 
+    }
+
+    @Suppress("MissingPermission")
+    private fun sendSetHome(elderId: Int) {
+        val fusedClient = LocationServices.getFusedLocationProviderClient(this)
+        fusedClient.lastLocation.addOnSuccessListener { location ->
+            if (location != null) {
+                lifecycleScope.launch {
+                    try {
+                        val response = RetrofitClient.loginApi.setHome(
+                            SetHomeRequest(
+                                elderId = elderId,
+                                lat = location.latitude,
+                                lng = location.longitude
+                            )
+                        )
+                        Log.d("Login", "Set-home success: ${response.isSuccessful}")
+                    } catch (e: Exception) {
+                        Log.e("Login", "Set-home failed", e)
+                    }
+                }
+            } else {
+                Log.w("Login", "No last location available for set-home")
+            }
+        }
     }
 
     private fun registerFcmToken(elderId: Int) {
