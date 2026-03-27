@@ -38,6 +38,7 @@ import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
+import java.nio.ByteBuffer
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
@@ -48,7 +49,6 @@ class LocationService : Service(), LifecycleOwner {
         private const val CHANNEL_ID = "location_channel"
         private const val NOTIFICATION_ID = 1
         private const val LOCATION_INTERVAL_MS = 5000L
-        // Reconnect back-off: starts at 3 s, caps at 60 s
         private const val RECONNECT_DELAY_INITIAL_MS = 3_000L
         private const val RECONNECT_DELAY_MAX_MS = 60_000L
         // Camera streaming throttle (~2 FPS)
@@ -60,13 +60,20 @@ class LocationService : Service(), LifecycleOwner {
     override val lifecycle: Lifecycle get() = lifecycleRegistry
 
     private lateinit var locationClient: FusedLocationProviderClient
-    // Save the callback so we can properly remove it later
     private var locationCallback: LocationCallback? = null
-    private var webSocket: WebSocket? = null
+
+    // ─── Location WebSocket ───────────────────────────────────────────────────
+    private var locationWebSocket: WebSocket? = null
+    private var locationReconnectDelayMs = RECONNECT_DELAY_INITIAL_MS
+
+    // ─── Video WebSocket ──────────────────────────────────────────────────────
+    private var videoWebSocket: WebSocket? = null
+    private var videoReconnectDelayMs = RECONNECT_DELAY_INITIAL_MS
+    private var videoWebSocketConnected = false
+
     private lateinit var client: OkHttpClient
     private lateinit var userPreferenceObj: UserPreferenceSaving
     private val mainHandler = Handler(Looper.getMainLooper())
-    private var reconnectDelayMs = RECONNECT_DELAY_INITIAL_MS
     private var isDestroyed = false
 
     // ─── Camera streaming state ───────────────────────────────────────────────
@@ -84,41 +91,40 @@ class LocationService : Service(), LifecycleOwner {
         super.onCreate()
         Log.d(TAG, "onCreate")
 
+        // FIX 2: CameraX requires RESUMED state — advance through all states
         lifecycleRegistry.currentState = Lifecycle.State.CREATED
 
         locationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        // OkHttpClient with keep-alive pings — detects silently dead connections
         client = OkHttpClient.Builder()
-            .pingInterval(20, TimeUnit.SECONDS)  // sends a WS ping every 20 s
+            .pingInterval(20, TimeUnit.SECONDS)
             .connectTimeout(15, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .build()
 
         userPreferenceObj = UserPreferenceSaving(this)
 
-        // Load elder ID for camera streaming
+        // FIX 4: Load elder ID before starting camera. Camera won't start until
+        //        elderId is loaded (guarded in startCameraStreaming).
         CoroutineScope(Dispatchers.IO).launch {
             elderId = userPreferenceObj.getElderIdOnce()
+            Log.d(TAG, "Loaded elderId=$elderId")
+            // Once we have the elderId, connect the video WebSocket
+            mainHandler.post { connectVideoWebSocket() }
         }
 
         startForeground(NOTIFICATION_ID, createNotification())
-        connectWebSocket()
+        connectLocationWebSocket()
     }
 
-    /**
-     * START_STICKY: Android will restart this service after killing it,
-     * and call onStartCommand again — so we reconnect the WebSocket.
-     */
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.d(TAG, "onStartCommand — reconnecting if needed")
+        Log.d(TAG, "onStartCommand")
 
         lifecycleRegistry.currentState = Lifecycle.State.STARTED
+        lifecycleRegistry.currentState = Lifecycle.State.RESUMED // FIX 2
 
-        if (webSocket == null) {
-            connectWebSocket()
-        }
+        if (locationWebSocket == null) connectLocationWebSocket()
         return START_STICKY
     }
 
@@ -129,8 +135,10 @@ class LocationService : Service(), LifecycleOwner {
         mainHandler.removeCallbacksAndMessages(null)
         stopLocationUpdates()
         stopCameraStreaming()
-        webSocket?.close(1000, "Service stopped")
-        webSocket = null
+        locationWebSocket?.close(1000, "Service stopped")
+        locationWebSocket = null
+        videoWebSocket?.close(1000, "Service stopped")
+        videoWebSocket = null
         client.dispatcher.executorService.shutdown()
         cameraExecutor.shutdown()
 
@@ -146,41 +154,107 @@ class LocationService : Service(), LifecycleOwner {
         super.onTaskRemoved(rootIntent)
     }
 
-    // ─── WebSocket ────────────────────────────────────────────────────────────
+    // ─── Location WebSocket ───────────────────────────────────────────────────
 
-    private fun connectWebSocket() {
+    // FIX 1: Location WebSocket connects to /ws/location and sends JSON LocationMsg
+    private fun connectLocationWebSocket() {
         val urlPreferences = UrlPreferences(this)
         CoroutineScope(Dispatchers.IO).launch {
             val wsUrl = urlPreferences.getWsUrlOnce()
             val token = userPreferenceObj.getToken().first()
 
             if (token.isNullOrBlank()) {
-                Log.w(TAG, "No token found — cannot connect WebSocket")
+                Log.w(TAG, "No token — cannot connect location WebSocket")
                 return@launch
             }
 
-            val fullUrl = wsUrl + token
-            Log.d(TAG, "Connecting WebSocket: $fullUrl")
+            // Derive base host from stored WS URL
+            // Stored format: wss://host/ws?token=  → we need wss://host/ws/location?token=TOKEN
+            val locationUrl = buildLocationWsUrl(wsUrl, token)
+            Log.d(TAG, "Connecting location WebSocket: $locationUrl")
 
-            val request = Request.Builder().url(fullUrl).build()
-            webSocket = client.newWebSocket(request, webSocketListener)
+            val request = Request.Builder().url(locationUrl).build()
+            locationWebSocket = client.newWebSocket(request, locationWsListener)
         }
     }
 
-    private val webSocketListener = object : WebSocketListener() {
+    private val locationWsListener = object : WebSocketListener() {
 
-        @RequiresPermission(
-            allOf = [Manifest.permission.ACCESS_FINE_LOCATION,
-                     Manifest.permission.ACCESS_COARSE_LOCATION]
-        )
+        @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION,
+                                     Manifest.permission.ACCESS_COARSE_LOCATION])
         override fun onOpen(webSocket: WebSocket, response: Response) {
-            Log.d(TAG, "WebSocket connected")
-            reconnectDelayMs = RECONNECT_DELAY_INITIAL_MS // reset back-off
-            startLocationUpdates()
+            Log.d(TAG, "Location WebSocket connected")
+            locationReconnectDelayMs = RECONNECT_DELAY_INITIAL_MS
+            // FIX 2: Advance lifecycle to RESUMED so CameraX can work
+            mainHandler.post {
+                if (lifecycleRegistry.currentState != Lifecycle.State.RESUMED) {
+                    lifecycleRegistry.currentState = Lifecycle.State.STARTED
+                    lifecycleRegistry.currentState = Lifecycle.State.RESUMED
+                }
+                startLocationUpdates()
+            }
         }
 
         override fun onMessage(webSocket: WebSocket, text: String) {
-            Log.d(TAG, "WebSocket message: $text")
+            Log.d(TAG, "Location WS message: $text")
+        }
+
+        override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
+            webSocket.close(1000, null)
+        }
+
+        override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
+            Log.d(TAG, "Location WebSocket closed: $code")
+            this@LocationService.locationWebSocket = null
+            stopLocationUpdates()
+            scheduleLocationReconnect()
+        }
+
+        override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+            Log.e(TAG, "Location WebSocket failure: ${t.message}")
+            this@LocationService.locationWebSocket = null
+            stopLocationUpdates()
+            scheduleLocationReconnect()
+        }
+    }
+
+    private fun scheduleLocationReconnect() {
+        if (isDestroyed) return
+        Log.d(TAG, "Location WS reconnecting in ${locationReconnectDelayMs / 1000}s…")
+        mainHandler.postDelayed({
+            if (!isDestroyed) connectLocationWebSocket()
+        }, locationReconnectDelayMs)
+        locationReconnectDelayMs = (locationReconnectDelayMs * 2).coerceAtMost(RECONNECT_DELAY_MAX_MS)
+    }
+
+    // ─── Video WebSocket ──────────────────────────────────────────────────────
+
+    // FIX 1: Video WebSocket connects to /ws/video?elderId=X
+    private fun connectVideoWebSocket() {
+        if (elderId == -1) {
+            Log.w(TAG, "elderId not loaded yet — video WebSocket connection deferred")
+            return
+        }
+        val urlPreferences = UrlPreferences(this)
+        CoroutineScope(Dispatchers.IO).launch {
+            val wsUrl = urlPreferences.getWsUrlOnce()
+            val videoUrl = buildVideoWsUrl(wsUrl, elderId)
+            Log.d(TAG, "Connecting video WebSocket: $videoUrl")
+
+            val request = Request.Builder().url(videoUrl).build()
+            videoWebSocket = client.newWebSocket(request, videoWsListener)
+        }
+    }
+
+    private val videoWsListener = object : WebSocketListener() {
+        override fun onOpen(webSocket: WebSocket, response: Response) {
+            Log.d(TAG, "Video WebSocket connected")
+            videoReconnectDelayMs = RECONNECT_DELAY_INITIAL_MS
+            videoWebSocketConnected = true
+        }
+
+        override fun onMessage(webSocket: WebSocket, text: String) {
+            Log.d(TAG, "Video WS message: $text")
             try {
                 val json = JSONObject(text)
                 when (json.optString("command")) {
@@ -194,54 +268,78 @@ class LocationService : Service(), LifecycleOwner {
                     }
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Error parsing WebSocket message", e)
+                Log.e(TAG, "Error parsing video WS message", e)
             }
         }
 
         override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
-            Log.d(TAG, "WebSocket closing: $code / $reason")
             webSocket.close(1000, null)
         }
 
         override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
-            Log.d(TAG, "WebSocket closed: $code / $reason")
-            this@LocationService.webSocket = null
-            stopLocationUpdates()
+            Log.d(TAG, "Video WebSocket closed: $code")
+            this@LocationService.videoWebSocket = null
+            videoWebSocketConnected = false
             mainHandler.post { stopCameraStreaming() }
-            scheduleReconnect()
+            scheduleVideoReconnect()
         }
 
         override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-            Log.e(TAG, "WebSocket failure: ${t.message}")
-            this@LocationService.webSocket = null
-            stopLocationUpdates()
+            Log.e(TAG, "Video WebSocket failure: ${t.message}")
+            this@LocationService.videoWebSocket = null
+            videoWebSocketConnected = false
             mainHandler.post { stopCameraStreaming() }
-            scheduleReconnect()
+            scheduleVideoReconnect()
         }
     }
 
-    /**
-     * Schedules a reconnect attempt with exponential back-off.
-     * Caps at RECONNECT_DELAY_MAX_MS.
-     */
-    private fun scheduleReconnect() {
+    private fun scheduleVideoReconnect() {
         if (isDestroyed) return
-        Log.d(TAG, "Reconnecting in ${reconnectDelayMs / 1000}s…")
+        Log.d(TAG, "Video WS reconnecting in ${videoReconnectDelayMs / 1000}s…")
         mainHandler.postDelayed({
-            if (!isDestroyed) connectWebSocket()
-        }, reconnectDelayMs)
-        // Exponential back-off: double each time, capped at max
-        reconnectDelayMs = (reconnectDelayMs * 2).coerceAtMost(RECONNECT_DELAY_MAX_MS)
+            if (!isDestroyed) connectVideoWebSocket()
+        }, videoReconnectDelayMs)
+        videoReconnectDelayMs = (videoReconnectDelayMs * 2).coerceAtMost(RECONNECT_DELAY_MAX_MS)
+    }
+
+    // ─── URL builders ─────────────────────────────────────────────────────────
+
+    /**
+     * Converts `wss://host/ws?token=` → `wss://host/ws/location?token=TOKEN`
+     * Handles both `/ws?token=` and `/ws/location?token=` inputs gracefully.
+     */
+    private fun buildLocationWsUrl(storedWsUrl: String, token: String): String {
+        // Strip trailing token value (if any) and path
+        val base = extractBaseHost(storedWsUrl) // e.g. wss://host
+        return "$base/ws/location?token=$token"
+    }
+
+    /**
+     * Converts `wss://host/ws?token=` → `wss://host/ws/video?elderId=X`
+     * Backend's /ws/video authenticates by elderId, not JWT.
+     */
+    private fun buildVideoWsUrl(storedWsUrl: String, elderId: Int): String {
+        val base = extractBaseHost(storedWsUrl)
+        return "$base/ws/video?elderId=$elderId"
+    }
+
+    /**
+     * Extracts the scheme+host from a WebSocket URL.
+     * e.g. "wss://example.com/ws?token=" → "wss://example.com"
+     */
+    private fun extractBaseHost(url: String): String {
+        // Find end of scheme (wss:// or ws://)
+        val schemeEnd = url.indexOf("://")
+        if (schemeEnd == -1) return url
+        val afterScheme = url.indexOf('/', schemeEnd + 3)
+        return if (afterScheme == -1) url else url.substring(0, afterScheme)
     }
 
     // ─── Location ─────────────────────────────────────────────────────────────
 
-    @RequiresPermission(
-        allOf = [Manifest.permission.ACCESS_FINE_LOCATION,
-                 Manifest.permission.ACCESS_COARSE_LOCATION]
-    )
+    @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION,
+                                 Manifest.permission.ACCESS_COARSE_LOCATION])
     private fun startLocationUpdates() {
-        // Guard: don't register a second callback if one is already active
         if (locationCallback != null) return
 
         val request = LocationRequest.Builder(
@@ -267,14 +365,19 @@ class LocationService : Service(), LifecycleOwner {
         locationCallback = null
     }
 
+    // FIX 1: Send location as JSON matching backend's LocationMsg record
     private fun sendLocation(location: Location) {
         val lat = location.latitude
         val lon = location.longitude
-        val msg = "$lat,$lon"
+        val msg = JSONObject().apply {
+            put("elderId", elderId)
+            put("lat", lat)
+            put("lon", lon)
+        }.toString()
         Log.d(TAG, "Sending location: $msg")
-        val sent = webSocket?.send(msg)
+        val sent = locationWebSocket?.send(msg)
         if (sent == false) {
-            Log.w(TAG, "WebSocket send failed — socket may be closed")
+            Log.w(TAG, "Location WebSocket send failed")
         }
     }
 
@@ -283,6 +386,12 @@ class LocationService : Service(), LifecycleOwner {
     private fun startCameraStreaming() {
         if (isStreaming) {
             Log.d(TAG, "Already streaming, ignoring START_STREAM")
+            return
+        }
+
+        // FIX 4: Guard — only stream if elderId is loaded
+        if (elderId == -1) {
+            Log.w(TAG, "elderId not loaded, cannot start streaming")
             return
         }
 
@@ -308,7 +417,7 @@ class LocationService : Service(), LifecycleOwner {
 
                 cameraProvider?.unbindAll()
                 cameraProvider?.bindToLifecycle(
-                    this@LocationService,
+                    this@LocationService,  // FIX 2: lifecycle is now RESUMED
                     cameraSelector,
                     imageAnalysis!!
                 )
@@ -335,6 +444,7 @@ class LocationService : Service(), LifecycleOwner {
     }
 
     private fun processFrame(imageProxy: ImageProxy) {
+        // FIX 4: Guard against RejectedExecutionException after executor shutdown
         try {
             if (!isStreaming) {
                 imageProxy.close()
@@ -349,7 +459,6 @@ class LocationService : Service(), LifecycleOwner {
             }
             lastFrameTimeMs = now
 
-            // Convert ImageProxy (YUV) → JPEG bytes
             val jpegBytes = imageProxyToJpeg(imageProxy, quality = 50)
             imageProxy.close()
 
@@ -362,48 +471,61 @@ class LocationService : Service(), LifecycleOwner {
                     put("image", base64Image)
                 }
 
-                val sent = webSocket?.send(frameJson.toString())
+                // FIX 1: Send camera frames on videoWebSocket, not locationWebSocket
+                val sent = videoWebSocket?.send(frameJson.toString())
                 if (sent == true) {
-                    Log.d(TAG, "Sending STREAM_FRAME (${jpegBytes.size} bytes)")
+                    Log.d(TAG, "Sent STREAM_FRAME (${jpegBytes.size} bytes)")
                 } else {
-                    Log.w(TAG, "Failed to send STREAM_FRAME")
+                    Log.w(TAG, "Failed to send STREAM_FRAME — video WebSocket not ready")
                 }
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error processing frame", e)
-            imageProxy.close()
+            try { imageProxy.close() } catch (_: Exception) {}
         }
     }
 
+    // FIX 3: Proper YUV_420_888 → NV21 conversion accounting for pixel stride
     private fun imageProxyToJpeg(image: ImageProxy, quality: Int): ByteArray? {
         return try {
-            val yBuffer = image.planes[0].buffer
-            val uBuffer = image.planes[1].buffer
-            val vBuffer = image.planes[2].buffer
+            val width = image.width
+            val height = image.height
 
-            val ySize = yBuffer.remaining()
-            val uSize = uBuffer.remaining()
-            val vSize = vBuffer.remaining()
+            val yPlane = image.planes[0]
+            val uPlane = image.planes[1]
+            val vPlane = image.planes[2]
 
-            val nv21 = ByteArray(ySize + uSize + vSize)
-            yBuffer.get(nv21, 0, ySize)
-            vBuffer.get(nv21, ySize, vSize)
-            uBuffer.get(nv21, ySize + vSize, uSize)
+            val yRowStride = yPlane.rowStride
+            val uvRowStride = uPlane.rowStride
+            val uvPixelStride = uPlane.pixelStride
 
-            val yuvImage = YuvImage(
-                nv21,
-                ImageFormat.NV21,
-                image.width,
-                image.height,
-                null
-            )
+            val nv21 = ByteArray(width * height * 3 / 2)
 
+            // Copy Y plane row by row (accounting for row padding)
+            val yBuffer: ByteBuffer = yPlane.buffer
+            var outOffset = 0
+            for (row in 0 until height) {
+                yBuffer.position(row * yRowStride)
+                yBuffer.get(nv21, outOffset, width)
+                outOffset += width
+            }
+
+            // Interleave V and U into NV21 format (V first, then U)
+            val uBuffer: ByteBuffer = uPlane.buffer
+            val vBuffer: ByteBuffer = vPlane.buffer
+            val halfHeight = height / 2
+            val halfWidth = width / 2
+            for (row in 0 until halfHeight) {
+                for (col in 0 until halfWidth) {
+                    val uvIndex = row * uvRowStride + col * uvPixelStride
+                    nv21[outOffset++] = vBuffer.get(uvIndex) // V
+                    nv21[outOffset++] = uBuffer.get(uvIndex) // U
+                }
+            }
+
+            val yuvImage = YuvImage(nv21, ImageFormat.NV21, width, height, null)
             val out = ByteArrayOutputStream()
-            yuvImage.compressToJpeg(
-                Rect(0, 0, image.width, image.height),
-                quality,
-                out
-            )
+            yuvImage.compressToJpeg(Rect(0, 0, width, height), quality, out)
             out.toByteArray()
         } catch (e: Exception) {
             Log.e(TAG, "YUV→JPEG conversion failed", e)
