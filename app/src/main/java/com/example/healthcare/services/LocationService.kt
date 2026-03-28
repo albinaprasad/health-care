@@ -148,7 +148,13 @@ class LocationService : Service(), LifecycleOwner {
                 return@launch
             }
 
-            val fullUrl = wsUrl + token
+            // Dynamically point to the backend's /ws/location endpoint
+            val locationWsUrl = if (wsUrl.endsWith("/ws?token=")) {
+                wsUrl.replace("/ws?token=", "/ws/location?token=")
+            } else {
+                wsUrl
+            }
+            val fullUrl = locationWsUrl + token
             Log.d(TAG, "Connecting location WebSocket: $fullUrl")
             webSocket = client.newWebSocket(
                 Request.Builder().url(fullUrl).build(),
@@ -288,9 +294,13 @@ class LocationService : Service(), LifecycleOwner {
     }
 
     private fun sendLocation(location: Location) {
-        val msg = "${location.latitude},${location.longitude}"
-        Log.d(TAG, "Sending location: $msg")
-        when (webSocket?.send(msg)) {
+        val json = JSONObject().apply {
+            put("elderId", elderId)
+            put("lat", location.latitude)
+            put("lon", location.longitude)
+        }.toString()
+        Log.d(TAG, "Sending location: $json")
+        when (webSocket?.send(json)) {
             true  -> Log.d(TAG, "Location send OK")
             false -> Log.w(TAG, "Location send FAILED — buffer full or socket closed")
             null  -> Log.w(TAG, "Location send SKIPPED — socket is null")
