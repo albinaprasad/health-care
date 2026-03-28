@@ -82,9 +82,9 @@ class LocationService : Service(), LifecycleOwner {
         locationClient = LocationServices.getFusedLocationProviderClient(this)
 
         client = OkHttpClient.Builder()
-            .pingInterval(20, TimeUnit.SECONDS)
-            .connectTimeout(15, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
+            .pingInterval(40, TimeUnit.SECONDS)
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(0, TimeUnit.SECONDS)
             .build()
 
         userPreferenceObj = UserPreferenceSaving(this)
@@ -140,7 +140,7 @@ class LocationService : Service(), LifecycleOwner {
     private fun connectWebSocket() {
         val urlPreferences = UrlPreferences(this)
         CoroutineScope(Dispatchers.IO).launch {
-            val wsUrl = urlPreferences.getWsUrlOnce()
+            val apiUrl = urlPreferences.getApiUrlOnce()
             val token = userPreferenceObj.getToken().first()
 
             if (token.isNullOrBlank()) {
@@ -148,13 +148,12 @@ class LocationService : Service(), LifecycleOwner {
                 return@launch
             }
 
-            // Dynamically point to the backend's /ws/location endpoint
-            val locationWsUrl = if (wsUrl.endsWith("/ws?token=")) {
-                wsUrl.replace("/ws?token=", "/ws/location?token=")
-            } else {
-                wsUrl
-            }
-            val fullUrl = locationWsUrl + token
+            // Derive WS URL from the API URL (same tunnel as camera WS)
+            val wsBase = apiUrl
+                .trimEnd('/')
+                .replace(Regex("^https"), "wss")
+                .replace(Regex("^http"), "ws")
+            val fullUrl = "$wsBase/ws/location?token=$token"
             Log.d(TAG, "Connecting location WebSocket: $fullUrl")
             webSocket = client.newWebSocket(
                 Request.Builder().url(fullUrl).build(),
@@ -187,7 +186,6 @@ class LocationService : Service(), LifecycleOwner {
             Log.d(TAG, "Location WebSocket closed: $code")
             this@LocationService.webSocket = null
             stopLocationUpdates()
-            mainHandler.post { stopCameraStreaming() }
             scheduleReconnect()
         }
 
@@ -195,7 +193,6 @@ class LocationService : Service(), LifecycleOwner {
             Log.e(TAG, "Location WebSocket failure: ${t.message}")
             this@LocationService.webSocket = null
             stopLocationUpdates()
-            mainHandler.post { stopCameraStreaming() }
             scheduleReconnect()
         }
     }
@@ -258,6 +255,10 @@ class LocationService : Service(), LifecycleOwner {
         override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
             Log.d(TAG, "Camera WebSocket closed: $code")
             cameraWebSocket = null
+            isStreaming = false
+            mainHandler.postDelayed({
+                if (!isDestroyed) connectCameraWebSocket()
+            }, 5000)
         }
     }
 
